@@ -1,0 +1,21 @@
+name: 'amos_core'
+version: '0.0.1'
+config-version: 2
+
+profile: 'default'  # change to your profile name
+
+vars:
+  active_source: "{{ var('active_source', 'example') }}"
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  amos_core:
+    +materialized: view
+    staging:
+      +schema: stg_core
+    marts:
+      +schema: marts

@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: dim_fund
+    description: Dimension of funds resolved from staging.
+    tests:
+      - not_null:
+          column_name: fund_id
+
+  - name: dim_company
+    tests:
+      - not_null:
+          column_name: company_id
+
+  - name: dim_investor
+    tests:
+      - not_null:
+          column_name: investor_id
+
+  - name: fct_transactions
+    tests:
+      - not_null:
+          column_name: transaction_id
+      - relationships:
+          arguments:
+            to: ref('dim_fund')
+            field: fund_id
+          column_name: fund_id

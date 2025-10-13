@@ -31,9 +31,6 @@ semantic_models:
       - name: transaction_type
         type: categorical
         expr: transaction_type
-      - name: amount
-        type: continuous
-        expr: amount
       - name: currency_code
         type: categorical
         expr: currency_code

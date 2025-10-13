@@ -2,27 +2,73 @@ version: 2
 
 models:
   - name: dim_fund
-    description: Dimension of funds resolved from staging.
-    tests:
-      - not_null:
-          column_name: fund_id
+    description: "Dimension table for funds"
+    columns:
+      - name: fund_id
+        description: "Unique identifier for the fund"
+        tests:
+          - not_null:
+              column_name: fund_id
+      - name: fund_code
+        description: "Fund code"
+      - name: fund_name
+        description: "Name of the fund"
+      - name: base_currency_code
+        description: "Base currency for the fund"
 
   - name: dim_company
-    tests:
-      - not_null:
-          column_name: company_id
+    description: "Dimension table for companies"
+    columns:
+      - name: company_id
+        description: "Unique identifier for the company"
+        tests:
+          - not_null:
+              column_name: company_id
+      - name: company_name
+        description: "Name of the company"
+      - name: country_code
+        description: "Country code"
+      - name: currency_code
+        description: "Currency code"
 
   - name: dim_investor
-    tests:
-      - not_null:
-          column_name: investor_id
+    description: "Dimension table for investors"
+    columns:
+      - name: investor_id
+        description: "Unique identifier for the investor"
+        tests:
+          - not_null:
+              column_name: investor_id
+      - name: investor_code
+        description: "Investor code"
+      - name: investor_name
+        description: "Name of the investor"
 
   - name: fct_transactions
-    tests:
-      - not_null:
-          column_name: transaction_id
-      - relationships:
-          arguments:
-            to: ref('dim_fund')
-            field: fund_id
-          column_name: fund_id
+    description: "Fact table for transactions"
+    columns:
+      - name: transaction_id
+        description: "Unique identifier for the transaction"
+        tests:
+          - not_null:
+              column_name: transaction_id
+      - name: fund_id
+        description: "Foreign key to dim_fund"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_fund')
+                field: fund_id
+              column_name: fund_id
+      - name: investor_id
+        description: "Foreign key to dim_investor"
+      - name: company_id
+        description: "Foreign key to dim_company"
+      - name: transaction_date
+        description: "Date of the transaction"
+      - name: transaction_type
+        description: "Type of transaction"
+      - name: amount
+        description: "Transaction amount"
+      - name: currency_code
+        description: "Currency of the transaction"

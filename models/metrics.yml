@@ -1,122 +1,38 @@
 version: 2
 
-semantic_models:
-  - name: fct_transactions
-    description: "Fact table for transactions"
+metrics:
+  - name: total_transactions
+    description: "Total number of transactions"
     model: ref('fct_transactions')
-    
-    defaults:
-      agg_time_dimension: transaction_date
-    
-    entities:
-      - name: transaction_id
-        type: primary
-        expr: transaction_id
-      - name: fund_id
-        type: foreign
-        expr: fund_id
-      - name: investor_id
-        type: foreign
-        expr: investor_id
-      - name: company_id
-        type: foreign
-        expr: company_id
-    
-    dimensions:
-      - name: transaction_date
-        type: time
-        expr: transaction_date
-        type_params:
-          time_granularity: day
-      - name: transaction_type
-        type: categorical
-        expr: transaction_type
-      - name: currency_code
-        type: categorical
-        expr: currency_code
-    
-    measures:
-      - name: total_transactions
-        agg: count
-        expr: transaction_id
-      - name: total_amount
-        agg: sum
-        expr: amount
-      - name: avg_amount
-        agg: average
-        expr: amount
-      - name: unique_transactions
-        agg: count_distinct
-        expr: transaction_id
+    type: count
+    sql: transaction_id
 
-  - name: dim_fund
-    description: "Dimension table for funds"
+  - name: total_transaction_amount
+    description: "Total amount of all transactions"
+    model: ref('fct_transactions')
+    type: sum
+    sql: amount
+
+  - name: avg_transaction_amount
+    description: "Average transaction amount"
+    model: ref('fct_transactions')
+    type: average
+    sql: amount
+
+  - name: unique_funds
+    description: "Number of unique funds"
     model: ref('dim_fund')
-    
-    entities:
-      - name: fund_id
-        type: primary
-        expr: fund_id
-    
-    dimensions:
-      - name: fund_name
-        type: categorical
-        expr: fund_name
-      - name: fund_code
-        type: categorical
-        expr: fund_code
-      - name: base_currency_code
-        type: categorical
-        expr: base_currency_code
-    
-    measures:
-      - name: unique_funds
-        agg: count_distinct
-        expr: fund_id
+    type: count_distinct
+    sql: fund_id
 
-  - name: dim_investor
-    description: "Dimension table for investors"
+  - name: unique_investors
+    description: "Number of unique investors"
     model: ref('dim_investor')
-    
-    entities:
-      - name: investor_id
-        type: primary
-        expr: investor_id
-    
-    dimensions:
-      - name: investor_name
-        type: categorical
-        expr: investor_name
-      - name: investor_code
-        type: categorical
-        expr: investor_code
-    
-    measures:
-      - name: unique_investors
-        agg: count_distinct
-        expr: investor_id
+    type: count_distinct
+    sql: investor_id
 
-  - name: dim_company
-    description: "Dimension table for companies"
+  - name: unique_companies
+    description: "Number of unique companies"
     model: ref('dim_company')
-    
-    entities:
-      - name: company_id
-        type: primary
-        expr: company_id
-    
-    dimensions:
-      - name: company_name
-        type: categorical
-        expr: company_name
-      - name: country_code
-        type: categorical
-        expr: country_code
-      - name: currency_code
-        type: categorical
-        expr: currency_code
-    
-    measures:
-      - name: unique_companies
-        agg: count_distinct
-        expr: company_id
+    type: count_distinct
+    sql: company_id

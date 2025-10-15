@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: company_metrics
+    description: "Complex company business metrics mart. Final BI-ready model combining company entities with calculated metrics from multiple sources."
+    columns:
+      - name: id
+        description: "Company identifier (foreign key to company entity)"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: name
+        description: "Company name"
+      - name: company_type
+        description: "Type of company"
+      - name: status
+        description: "Company status"
+      - name: latest_valuation
+        description: "Most recent company valuation amount"
+      - name: latest_valuation_date
+        description: "Date of most recent valuation"
+      - name: employee_count
+        description: "Current number of employees"
+      - name: annual_revenue
+        description: "Most recent annual revenue"
+      - name: calculated_at
+        description: "Timestamp when metrics were calculated"
+        
+  - name: investor_metrics
+    description: "Complex investor metrics mart. Final BI-ready model combining investor entities with metrics aggregated from commitments and investments."
+    columns:
+      - name: id
+        description: "Investor identifier (foreign key to investor entity)"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('investor')
+              field: id
+      - name: name
+        description: "Investor name"
+      - name: investor_type
+        description: "Type of investor"
+      - name: status
+        description: "Investor status"
+      - name: total_commitments
+        description: "Total committed capital across all funds"
+      - name: total_invested
+        description: "Total capital invested to date"
+      - name: active_funds_count
+        description: "Number of active fund commitments"
+      - name: first_investment_date
+        description: "Date of first investment with the firm"
+      - name: last_investment_date
+        description: "Date of most recent investment activity"
+      - name: calculated_at
+        description: "Timestamp when metrics were calculated"
+        
+  - name: counterparty_metrics
+    description: "Complex counterparty metrics mart. Final BI-ready model combining counterparty entities with relationship and transaction metrics."
+    columns:
+      - name: id
+        description: "Counterparty identifier (foreign key to counterparty entity)"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('counterparty')
+              field: id
+      - name: name
+        description: "Counterparty name"
+      - name: counterparty_type
+        description: "Type of counterparty"
+      - name: status
+        description: "Counterparty status"
+      - name: active_relationships_count
+        description: "Number of active business relationships"
+      - name: total_transaction_volume
+        description: "Total transaction volume facilitated"
+      - name: first_engagement_date
+        description: "Date of first business engagement"
+      - name: last_engagement_date
+        description: "Date of most recent business activity"
+      - name: calculated_at
+        description: "Timestamp when metrics were calculated"

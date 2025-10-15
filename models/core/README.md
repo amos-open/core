@@ -2,6 +2,23 @@
 
 This directory contains the canonical dbt models that transform staging data into the core schema.
 
+## Amos Architecture Overview
+
+In the Amos dbt architecture:
+- **Source Extensions**: Provide raw sources and staging models (e.g., `source_example` package)
+- **Core Project**: Contains canonical business entities, dimensions, and facts (this project)
+- **Marts**: Final BI-ready models for consumption
+
+```
+Source Extensions (e.g., source_example)
+├── sources/           # Raw data source definitions
+└── models/staging/    # Staging models (stg_fund, stg_company, etc.)
+
+Core Project (this project)
+├── models/core/       # Canonical business layer
+└── models/marts/      # Final BI-ready models
+```
+
 ## Directory Structure
 
 - **dimensions/**: Reference/lookup tables (dim_currency, dim_country, etc.)
@@ -61,9 +78,18 @@ This approach is:
 - Easy to maintain
 - Familiar to all dbt developers
 
-## Next Steps
+## Dependencies
 
-1. Create staging models that these core models will reference
-2. Implement the actual SQL model files for each table
-3. Add data contracts and comprehensive testing using standard dbt tests
-4. Configure incremental loading for fact tables
+Core models reference staging models provided by source extensions:
+- `{{ ref('stg_fund') }}` - From source extension (e.g., source_example)
+- `{{ ref('stg_company') }}` - From source extension
+- `{{ ref('stg_investor') }}` - From source extension  
+- `{{ ref('stg_counterparty') }}` - From source extension
+
+## Installation Requirements
+
+To use this core project, you must install appropriate source extensions that provide:
+1. Source definitions for your data warehouse
+2. Staging models that clean and standardize raw data
+
+Example: Install the `source_example` extension for demo/development purposes.

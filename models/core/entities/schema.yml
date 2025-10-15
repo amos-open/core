@@ -3,12 +3,297 @@ version: 2
 models:
   - name: fund
     description: "Investment fund master data with performance attributes. Updated daily at 6 AM UTC."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: varchar(36)
+        description: "Unique fund identifier (UUID). Use this for joins with other tables."
+        constraints:
+          - type: not_null
+          - type: primary_key
+      - name: name
+        data_type: varchar(255)
+        description: "Fund display name as it appears in reports and BI dashboards."
+        constraints:
+          - type: not_null
+      - name: base_currency_code
+        data_type: varchar(3)
+        description: "Fund's base currency (ISO 3-letter code). Join with dim_currency for currency name."
+        constraints:
+          - type: not_null
+      - name: fund_type
+        data_type: varchar(50)
+        description: "Type of fund (GROWTH, VENTURE, BUYOUT, etc.)"
+        constraints:
+          - type: not_null
+      - name: status
+        data_type: varchar(20)
+        description: "Current fund status (ACTIVE, CLOSED, LIQUIDATED)"
+        constraints:
+          - type: not_null
+      - name: target_size
+        data_type: decimal(18,2)
+        description: "Target fund size in base currency"
+        constraints:
+          - type: not_null
+      - name: committed_capital
+        data_type: decimal(18,2)
+        description: "Total committed capital from investors"
+        constraints:
+          - type: not_null
+      - name: called_capital
+        data_type: decimal(18,2)
+        description: "Capital called from investors to date"
+        constraints:
+          - type: not_null
+      - name: inception_date
+        data_type: date
+        description: "Fund inception/first close date"
+        constraints:
+          - type: not_null
+      - name: maturity_date
+        data_type: date
+        description: "Fund maturity/end date"
+      - name: description
+        data_type: varchar(1000)
+        description: "Fund description and investment strategy"
+      - name: commitment_percentage
+        data_type: decimal(5,2)
+        description: "Percentage of target size committed (committed_capital / target_size * 100)"
+      - name: drawdown_percentage
+        data_type: decimal(5,2)
+        description: "Percentage of committed capital called (called_capital / committed_capital * 100)"
+      - name: fund_age_years
+        data_type: integer
+        description: "Fund age in years since inception"
+      - name: remaining_term_years
+        data_type: integer
+        description: "Remaining fund term in years until maturity"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: id
+      - not_null:
+          column_name: id
+      - not_null:
+          column_name: name
+      - accepted_values:
+          column_name: status
+          values: ['ACTIVE', 'CLOSED', 'LIQUIDATED']
+      - accepted_values:
+          column_name: fund_type
+          values: ['GROWTH', 'VENTURE', 'BUYOUT', 'CREDIT', 'INFRASTRUCTURE', 'REAL_ESTATE']
+      - relationships:
+          to: ref('dim_currency')
+          field: code
+          column_name: base_currency_code
     
   - name: company
     description: "Portfolio company master data with industry classification"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: varchar(36)
+        description: "Unique company identifier (UUID). Use this for joins with other tables."
+        constraints:
+          - type: not_null
+          - type: primary_key
+      - name: name
+        data_type: varchar(255)
+        description: "Company legal name as it appears in official documents."
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: company_type
+        data_type: varchar(50)
+        description: "Type of company (PRIVATE, PUBLIC, SUBSIDIARY, etc.)"
+        constraints:
+          - type: not_null
+      - name: status
+        data_type: varchar(20)
+        description: "Current company status (ACTIVE, INACTIVE, ACQUIRED, IPO, LIQUIDATED)"
+        constraints:
+          - type: not_null
+      - name: founded_date
+        data_type: date
+        description: "Company founding/incorporation date"
+      - name: country_code
+        data_type: varchar(2)
+        description: "Company headquarters country (ISO 2-letter code). Join with dim_country."
+      - name: description
+        data_type: varchar(1000)
+        description: "Company business description and sector focus"
+      - name: company_age_years
+        data_type: integer
+        description: "Company age in years since founding (simple derived attribute)"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: id
+      - unique:
+          column_name: name
+      - not_null:
+          column_name: id
+      - not_null:
+          column_name: name
+      - accepted_values:
+          column_name: status
+          values: ['ACTIVE', 'INACTIVE', 'ACQUIRED', 'IPO', 'LIQUIDATED']
+      - accepted_values:
+          column_name: company_type
+          values: ['PRIVATE', 'PUBLIC', 'SUBSIDIARY', 'PARTNERSHIP', 'LLC']
+      - relationships:
+          to: ref('dim_country')
+          field: code
+          column_name: country_code
     
   - name: investor
     description: "Investor master data with type classification"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: varchar(36)
+        description: "Unique investor identifier (UUID). Use this for joins with other tables."
+        constraints:
+          - type: not_null
+          - type: primary_key
+      - name: name
+        data_type: varchar(255)
+        description: "Investor legal name as it appears in official documents."
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: investor_type
+        data_type: varchar(50)
+        description: "Type of investor (INSTITUTIONAL, FAMILY_OFFICE, SOVEREIGN_WEALTH, etc.)"
+        constraints:
+          - type: not_null
+      - name: status
+        data_type: varchar(20)
+        description: "Current investor status (ACTIVE, INACTIVE, RESTRICTED)"
+        constraints:
+          - type: not_null
+      - name: country_code
+        data_type: varchar(2)
+        description: "Investor domicile country (ISO 2-letter code). Join with dim_country."
+      - name: description
+        data_type: varchar(1000)
+        description: "Investor profile and investment focus description"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: id
+      - unique:
+          column_name: name
+      - not_null:
+          column_name: id
+      - not_null:
+          column_name: name
+      - accepted_values:
+          column_name: status
+          values: ['ACTIVE', 'INACTIVE', 'RESTRICTED']
+      - relationships:
+          to: ref('dim_investor_type')
+          field: code
+          column_name: investor_type
+      - relationships:
+          to: ref('dim_country')
+          field: code
+          column_name: country_code
     
   - name: counterparty
     description: "External party master data for syndicated deals"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: varchar(36)
+        description: "Unique counterparty identifier (UUID). Use this for joins with other tables."
+        constraints:
+          - type: not_null
+          - type: primary_key
+      - name: name
+        data_type: varchar(255)
+        description: "Counterparty legal name as it appears in official documents."
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: counterparty_type
+        data_type: varchar(50)
+        description: "Type of counterparty (BANK, LEGAL, CONSULTANT, BROKER, etc.)"
+        constraints:
+          - type: not_null
+      - name: status
+        data_type: varchar(20)
+        description: "Current counterparty status (ACTIVE, INACTIVE, RESTRICTED)"
+        constraints:
+          - type: not_null
+      - name: country_code
+        data_type: varchar(2)
+        description: "Counterparty domicile country (ISO 2-letter code). Join with dim_country."
+      - name: description
+        data_type: varchar(1000)
+        description: "Counterparty services and relationship description"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: id
+      - unique:
+          column_name: name
+      - not_null:
+          column_name: id
+      - not_null:
+          column_name: name
+      - accepted_values:
+          column_name: status
+          values: ['ACTIVE', 'INACTIVE', 'RESTRICTED']
+      - accepted_values:
+          column_name: counterparty_type
+          values: ['BANK', 'LEGAL', 'CONSULTANT', 'BROKER', 'AUDITOR', 'CUSTODIAN', 'ADMINISTRATOR']
+      - relationships:
+          to: ref('dim_country')
+          field: code
+          column_name: country_code

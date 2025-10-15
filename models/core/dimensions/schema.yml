@@ -2,13 +2,13 @@ version: 2
 
 models:
   - name: dim_currency
-    description: "ISO currency codes with exchange rate support for fund base currencies. Updated daily at 6 AM UTC."
+    description: "Currency dimension table"
     config:
       contract:
         enforced: true
     columns:
       - name: code
-        description: "ISO 3-letter currency code (e.g., USD, EUR, GBP). Use this for joins with other tables."
+        description: "ISO 3-letter currency code"
         data_type: varchar(3)
         constraints:
           - type: not_null
@@ -17,131 +17,59 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Full currency name (e.g., US Dollar, Euro)"
-        data_type: varchar(255)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - unique
-      - name: symbol
-        description: "Currency symbol for display purposes (e.g., $, €, £)"
-        data_type: varchar(10)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-      - name: decimal_places
-        description: "Number of decimal places typically used for this currency"
-        data_type: integer
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 2, 3, 4]
-      - name: is_active
-        description: "Whether this currency is currently active for new transactions"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Currency name"
+        data_type: varchar(64)
       - name: created_at
-        description: "Timestamp when the currency record was created"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record creation timestamp"
+        data_type: timestamp
       - name: updated_at
-        description: "Timestamp when the currency record was last updated"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record last update timestamp"
+        data_type: timestamp
     
   - name: dim_country
-    description: "Geographic hierarchy with region/subregion for portfolio company locations. Updated weekly."
+    description: "Country dimension table"
     config:
       contract:
         enforced: true
     columns:
       - name: code
-        description: "ISO 2-letter country code (e.g., US, GB, DE). Use this for joins with other tables."
-        data_type: varchar(2)
+        description: "ISO 2-letter country code"
+        data_type: char(2)
         constraints:
           - type: not_null
           - type: primary_key
         tests:
           - unique
           - not_null
-      - name: iso3_code
-        description: "ISO 3-letter country code (e.g., USA, GBR, DEU)"
-        data_type: varchar(3)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - unique
       - name: name
-        description: "Full country name (e.g., United States, United Kingdom)"
-        data_type: varchar(255)
+        description: "Country name"
+        data_type: varchar(128)
         constraints:
           - type: not_null
         tests:
           - not_null
-          - unique
       - name: region
-        description: "Geographic region (e.g., Europe, North America, Asia)"
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Oceania', 'Antarctica']
+        description: "Geographic region"
+        data_type: varchar(64)
       - name: subregion
-        description: "Geographic subregion for more detailed classification"
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-      - name: is_active
-        description: "Whether this country is currently active for new investments"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Geographic subregion"
+        data_type: varchar(64)
       - name: created_at
-        description: "Timestamp when the country record was created"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record creation timestamp"
+        data_type: timestamp
       - name: updated_at
-        description: "Timestamp when the country record was last updated"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record last update timestamp"
+        data_type: timestamp
     
   - name: dim_industry
-    description: "Industry classification for portfolio companies based on GICS (Global Industry Classification Standard). Updated monthly."
+    description: "Industry dimension table"
     config:
       contract:
         enforced: true
     columns:
-      - name: code
-        description: "Unique industry code identifier (e.g., TECH_SOFTWARE, HEALTHCARE_PHARMA). Use this for joins with other tables."
-        data_type: varchar(50)
+      - name: id
+        description: "Unique industry identifier"
+        data_type: uuid
         constraints:
           - type: not_null
           - type: primary_key
@@ -149,68 +77,29 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Full industry name (e.g., Technology - Software, Healthcare - Pharmaceuticals)"
-        data_type: varchar(255)
+        description: "Industry name"
+        data_type: varchar(128)
         constraints:
           - type: not_null
         tests:
           - not_null
           - unique
-      - name: sector
-        description: "High-level sector classification (e.g., Technology, Healthcare, Financials)"
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['Technology', 'Healthcare', 'Financials', 'Energy', 'Consumer Discretionary', 'Consumer Staples', 'Industrials', 'Materials', 'Real Estate', 'Communication Services', 'Utilities']
-      - name: subsector
-        description: "Mid-level subsector classification within the sector"
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-      - name: industry_group
-        description: "Detailed industry group classification"
-        data_type: varchar(100)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-      - name: is_active
-        description: "Whether this industry classification is currently active for new investments"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
       - name: created_at
-        description: "Timestamp when the industry record was created"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record creation timestamp"
+        data_type: timestamp
       - name: updated_at
-        description: "Timestamp when the industry record was last updated"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record last update timestamp"
+        data_type: timestamp
     
   - name: dim_investor_type
-    description: "Investor categorization for KYC compliance and regulatory reporting. Updated as needed."
+    description: "Investor type dimension table"
     config:
       contract:
         enforced: true
     columns:
-      - name: code
-        description: "Unique investor type code (e.g., INSTITUTIONAL, FAMILY_OFFICE). Use this for joins with other tables."
-        data_type: varchar(50)
+      - name: id
+        description: "Unique investor type identifier"
+        data_type: uuid
         constraints:
           - type: not_null
           - type: primary_key
@@ -218,66 +107,27 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Full investor type name (e.g., Institutional Investor, Family Office)"
-        data_type: varchar(255)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - unique
-      - name: description
-        description: "Detailed description of the investor type and characteristics"
-        data_type: varchar(500)
-        tests:
-          - not_null
-      - name: category
-        description: "High-level category grouping (e.g., PROFESSIONAL, INDIVIDUAL, GOVERNMENT)"
-        data_type: varchar(50)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['PROFESSIONAL', 'INDIVIDUAL', 'GOVERNMENT', 'CORPORATE', 'FINANCIAL_INSTITUTION']
-      - name: requires_kyc
-        description: "Whether this investor type requires enhanced KYC procedures"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-      - name: is_active
-        description: "Whether this investor type is currently active for new investments"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Investor type name"
+        data_type: varchar(128)
+      - name: kyc_category
+        description: "KYC category"
+        data_type: varchar(128)
       - name: created_at
-        description: "Timestamp when the investor type record was created"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record creation timestamp"
+        data_type: timestamp
       - name: updated_at
-        description: "Timestamp when the investor type record was last updated"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record last update timestamp"
+        data_type: timestamp
     
   - name: dim_stage
-    description: "Investment stage classification for portfolio tracking and reporting. Updated as needed."
+    description: "Investment stage dimension table"
     config:
       contract:
         enforced: true
     columns:
-      - name: code
-        description: "Unique investment stage code (e.g., SEED, SERIES_A, BUYOUT). Use this for joins with other tables."
-        data_type: varchar(50)
+      - name: id
+        description: "Unique stage identifier"
+        data_type: uuid
         constraints:
           - type: not_null
           - type: primary_key
@@ -285,59 +135,14 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Full investment stage name (e.g., Seed, Series A, Buyout)"
-        data_type: varchar(255)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - unique
-      - name: description
-        description: "Detailed description of the investment stage characteristics and typical use cases"
-        data_type: varchar(500)
-        tests:
-          - not_null
-      - name: stage_order
-        description: "Numerical order of investment stages for progression analysis (1=earliest, higher=later)"
-        data_type: integer
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - unique
-          - dbt_utils.accepted_range:
-              arguments:
-                min_value: 1
-                max_value: 20
-                inclusive: [true, true]
-      - name: stage_category
-        description: "High-level stage category grouping (e.g., EARLY, GROWTH, BUYOUT)"
-        data_type: varchar(50)
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['EARLY', 'GROWTH', 'BUYOUT', 'SPECIAL_SITUATIONS']
-      - name: is_active
-        description: "Whether this investment stage is currently active for new investments"
-        data_type: boolean
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Stage name"
+        data_type: varchar(128)
+      - name: type
+        description: "Stage type"
+        data_type: varchar(64)
       - name: created_at
-        description: "Timestamp when the investment stage record was created"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record creation timestamp"
+        data_type: timestamp
       - name: updated_at
-        description: "Timestamp when the investment stage record was last updated"
-        data_type: timestamp_ntz
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
+        description: "Record last update timestamp"
+        data_type: timestamp

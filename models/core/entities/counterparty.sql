@@ -1,38 +1,37 @@
--- Counterparty entity model for external parties
--- Transforms staging counterparty data to canonical schema with business constraints
-
-{{ config(
+{{
+  config(
     materialized='table',
-    cluster_by=['counterparty_type', 'country_code'],
+    cluster_by=['type', 'country_code'],
     tags=['bi_accessible', 'canonical', 'entity']
-) }}
+  )
+}}
 
-WITH counterparty_base AS (
-    SELECT 
-        id,
-        name,
-        counterparty_type,
-        status,
-        country_code,
-        description,
-        created_at,
-        updated_at
-    FROM {{ ref('stg_counterparty') }}
+WITH staging_counterparty AS (
+  SELECT * FROM {{ ref('stg_counterparty') }}
 ),
 
-SELECT 
+validated_counterparty AS (
+  SELECT
     id,
     name,
-    counterparty_type,
-    status,
+    type,
     country_code,
-    description,
     created_at,
     updated_at
-FROM counterparty_base
+  FROM staging_counterparty
+  WHERE 1=1
+    -- Basic validation
+    AND id IS NOT NULL
+    AND name IS NOT NULL
+    -- Business rule validation
+    AND (country_code IS NULL OR LENGTH(country_code) = 2)
+)
 
--- Data quality validation
-WHERE id IS NOT NULL
-  AND name IS NOT NULL
-  AND counterparty_type IS NOT NULL
-  AND status IS NOT NULL
+SELECT
+  id,
+  name,
+  type,
+  country_code,
+  created_at,
+  updated_at
+FROM validated_counterparty

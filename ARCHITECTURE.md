@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document explains the Amos dbt architecture and the proper separation of concerns between source extensions and the core canonical project.
+This document explains the Amos dbt architecture and the proper separation of concerns between source extensions and the core canonical package.
 
 ## Architecture Principles
 
@@ -12,7 +12,7 @@ This document explains the Amos dbt architecture and the proper separation of co
 - Each extension provides clean, standardized staging models
 
 ### 2. **Core Canonical Layer**
-- Core project contains **business entities**, **dimensions**, and **relationships**
+- Core package contains **business entities**, **dimensions**, and **relationships**
 - References staging models from extensions via `{{ ref('stg_model') }}`
 - Focuses on business logic, not data extraction/cleaning
 
@@ -35,7 +35,7 @@ source_example/
 └── sources/
     └── sources.yml
 
-# Core Project (this repository)
+# Core Package (this repository)
 amos_core/
 ├── models/
 │   ├── core/
@@ -55,7 +55,7 @@ amos_core/
 ## Data Flow
 
 ```
-Raw Sources (Extension) → Staging (Extension) → Core (This Project) → Marts (This Project) → BI Tools
+Raw Sources (Extension) → Staging (Extension) → Core (This Package) → Marts (This Package) → BI Tools
 ```
 
 1. **Extensions** extract and clean raw data into staging models
@@ -75,8 +75,8 @@ Raw Sources (Extension) → Staging (Extension) → Core (This Project) → Mart
 - Marts handle BI-specific aggregations
 
 ### ✅ **Reusability**
-- Core project works with any compatible source extension
-- Extensions can be shared across projects
+- Core package works with any compatible source extension
+- Extensions can be shared across dbt projects
 - Business logic is centralized
 
 ### ✅ **Maintainability**
@@ -107,15 +107,30 @@ Source extensions must provide:
 
 ## Example Usage
 
-### Installing Extensions
+### Recommended: Use amos_runner Starter Project
+```bash
+# Clone starter project with pre-configured dependencies
+git clone https://github.com/amos/amos_runner.git my_amos_project
+cd my_amos_project
+
+# Install dependencies (amos_core + source_example)
+dbt deps
+
+# Run complete pipeline
+dbt run && dbt test
+```
+
+### Manual Setup
 ```yaml
 # packages.yml
 packages:
+  - package: amos/amos_core
+    version: "0.0.1"
   - package: amos/source_example
     version: ">=1.0.0"
 ```
 
-### Running the Project
+### Running Your dbt Project
 ```bash
 # Install dependencies (including extensions)
 dbt deps

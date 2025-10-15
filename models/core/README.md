@@ -6,7 +6,7 @@ This directory contains the canonical dbt models that transform staging data int
 
 In the Amos dbt architecture:
 - **Source Extensions**: Provide raw sources and staging models (e.g., `source_example` package)
-- **Core Project**: Contains canonical business entities, dimensions, and facts (this project)
+- **Core Package**: Contains canonical business entities, dimensions, and facts (this package)
 - **Marts**: Final BI-ready models for consumption
 
 ```
@@ -14,7 +14,7 @@ Source Extensions (e.g., source_example)
 ├── sources/           # Raw data source definitions
 └── models/staging/    # Staging models (stg_fund, stg_company, etc.)
 
-Core Project (this project)
+Core Package (this package)
 ├── models/core/       # Canonical business layer
 └── models/marts/      # Final BI-ready models
 ```
@@ -61,7 +61,7 @@ All core models are configured to be created in:
 
 ## Enum Validation Approach
 
-Instead of custom enum macros, this project uses standard dbt `accepted_values` tests in schema.yml files:
+Instead of custom enum macros, this package uses standard dbt `accepted_values` tests in schema.yml files:
 
 ```yaml
 # Example in schema.yml
@@ -88,7 +88,7 @@ Core models reference staging models provided by source extensions:
 
 ## Installation Requirements
 
-To use this core project, you must install appropriate source extensions that provide:
+To use this core package, you must install appropriate source extensions that provide:
 1. Source definitions for your data warehouse
 2. Staging models that clean and standardize raw data
 

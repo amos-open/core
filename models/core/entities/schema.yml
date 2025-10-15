@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: fund
+    description: "Investment fund master data with performance attributes. Updated daily at 6 AM UTC."
+    
+  - name: company
+    description: "Portfolio company master data with industry classification"
+    
+  - name: investor
+    description: "Investor master data with type classification"
+    
+  - name: counterparty
+    description: "External party master data for syndicated deals"

@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: share_class
+    description: "Share class details for equity investments"
+    
+  - name: shareholder
+    description: "Shareholder information and ownership tracking"
+    
+  - name: investment_round
+    description: "Investment round details and valuations"
+    
+  - name: commitment_record
+    description: "Detailed commitment records and transactions"
+    
+  - name: company_valuation
+    description: "Company valuation history and methodologies"
+    
+  - name: company_dividend_forecast
+    description: "Company dividend forecasts and projections"
+    
+  - name: valuation_policy
+    description: "Valuation policies and methodologies"
+    
+  - name: loan_interest_period
+    description: "Loan interest period calculations and accruals"

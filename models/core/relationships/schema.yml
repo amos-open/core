@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: commitment
+    description: "Fund-investor commitment relationships"
+    
+  - name: investment
+    description: "Fund-company investment relationships"
+    
+  - name: facility
+    description: "Facility relationship data"
+    columns:
+      - name: facility_type
+        description: "Type of facility (e.g., TERM_LOAN_B, UNITRANCHE, etc.)"
+        tests:
+          - accepted_values:
+              values: ['TERM_LOAN_B', 'UNITRANCHE', 'REVOLVER', 'DELAYED_DRAWDOWN', 'MEZZANINE', 'RCF', 'BRIDGE']
+    
+  - name: loan
+    description: "Loan relationship data"
+    columns:
+      - name: loan_type
+        description: "Type of loan (e.g., TERM_LOAN_B, UNITRANCHE, etc.)"
+        tests:
+          - accepted_values:
+              values: ['TERM_LOAN_B', 'UNITRANCHE', 'REVOLVER', 'DELAYED_DRAWDOWN', 'MEZZANINE', 'RCF', 'BRIDGE']
+    
+  - name: opportunity
+    description: "Investment opportunity pipeline data"

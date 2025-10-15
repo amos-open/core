@@ -4,3 +4,4 @@ dbt_internal_packages/
 logs/
 .env
 *.DS_Store
+.kiro/

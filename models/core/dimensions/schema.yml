@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: dim_currency
+    description: "ISO currency codes with exchange rate support for fund base currencies"
+    
+  - name: dim_country
+    description: "Geographic hierarchy with region/subregion for portfolio company locations"
+    
+  - name: dim_industry
+    description: "Industry classification for portfolio companies"
+    
+  - name: dim_investor_type
+    description: "Investor categorization for KYC compliance"
+    
+  - name: dim_stage
+    description: "Investment stage classification"

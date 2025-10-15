@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: company_industry
+    description: "Many-to-many relationship between companies and industries"
+    
+  - name: company_country
+    description: "Many-to-many relationship between companies and countries"
+    
+  - name: facility_country
+    description: "Many-to-many relationship between facilities and countries"
+    
+  - name: facility_industry
+    description: "Many-to-many relationship between facilities and industries"
+    
+  - name: facility_lender
+    description: "Many-to-many relationship between facilities and lenders with syndicate roles"
+    
+  - name: loan_country
+    description: "Many-to-many relationship between loans and countries"
+    
+  - name: loan_industry
+    description: "Many-to-many relationship between loans and industries"
+    
+  - name: opportunity_country
+    description: "Many-to-many relationship between opportunities and countries"
+    
+  - name: opportunity_industry
+    description: "Many-to-many relationship between opportunities and industries"

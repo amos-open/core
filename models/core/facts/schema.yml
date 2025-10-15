@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: fct_fund_snapshot
+    description: "Point-in-time fund performance metrics with incremental loading"
+    
+  - name: fct_commitment_snapshot
+    description: "Point-in-time commitment snapshots"
+    
+  - name: fct_investment_snapshot
+    description: "Point-in-time investment valuations"
+    
+  - name: fct_loan_snapshot
+    description: "Point-in-time loan positions and valuations"
+    
+  - name: fct_company_performance_snapshot
+    description: "Point-in-time company performance metrics"
+    
+  - name: fct_transaction
+    description: "All financial transactions across the platform"
+    
+  - name: fct_loan_cashflow
+    description: "Detailed loan payment and draw tracking"

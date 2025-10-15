@@ -17,5 +17,27 @@ models:
     +materialized: view
     staging:
       +schema: stg_core
+    core:
+      +schema: public
+      +database: core
+      dimensions:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'dimension']
+      entities:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'entity']
+      relationships:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'relationship']
+      bridge:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'bridge']
+      facts:
+        +materialized: incremental
+        +on_schema_change: 'fail'
+        +tags: ['bi_accessible', 'canonical', 'fact']
+      supporting:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'supporting']
     marts:
       +schema: marts

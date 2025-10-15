@@ -3,27 +3,382 @@ version: 2
 models:
   - name: commitment
     description: "Fund-investor commitment relationships"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique commitment identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: investor_id
+        data_type: uuid
+        description: "Foreign key to investor table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('investor')
+              field: id
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
     
   - name: investment
     description: "Fund-company investment relationships"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique investment identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: description
+        data_type: text
+        description: "Investment description"
+      - name: investment_type
+        data_type: varchar(64)
+        description: "Type of investment"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
     
   - name: facility
     description: "Facility relationship data"
+    config:
+      contract:
+        enforced: true
     columns:
-      - name: facility_type
-        description: "Type of facility (e.g., TERM_LOAN_B, UNITRANCHE, etc.)"
+      - name: id
+        data_type: uuid
+        description: "Unique facility identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
         tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: investment_id
+        data_type: uuid
+        description: "Foreign key to investment table (optional)"
+        tests:
+          - relationships:
+              to: ref('investment')
+              field: id
+      - name: borrower_company_id
+        data_type: uuid
+        description: "Foreign key to company table (borrower)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: facility_type
+        data_type: varchar(50)
+        description: "Type of facility"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
           - accepted_values:
               values: ['TERM_LOAN_B', 'UNITRANCHE', 'REVOLVER', 'DELAYED_DRAWDOWN', 'MEZZANINE', 'RCF', 'BRIDGE']
+      - name: agent_counterparty_id
+        data_type: uuid
+        description: "Foreign key to counterparty table (agent)"
+        tests:
+          - relationships:
+              to: ref('counterparty')
+              field: id
+      - name: agreement_date
+        data_type: date
+        description: "Date when facility agreement was signed"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: effective_date
+        data_type: date
+        description: "Date when facility becomes effective"
+      - name: maturity_date
+        data_type: date
+        description: "Facility maturity date"
+      - name: base_currency_code
+        data_type: varchar(3)
+        description: "Base currency code for facility (ISO 3-letter code)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: total_commitment
+        data_type: numeric(24,2)
+        description: "Total facility commitment amount"
+      - name: purpose
+        data_type: varchar(256)
+        description: "Purpose of the facility"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
     
   - name: loan
     description: "Loan relationship data"
+    config:
+      contract:
+        enforced: true
     columns:
+      - name: id
+        data_type: uuid
+        description: "Unique loan identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: facility_id
+        data_type: uuid
+        description: "Foreign key to facility table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('facility')
+              field: id
       - name: loan_type
-        description: "Type of loan (e.g., TERM_LOAN_B, UNITRANCHE, etc.)"
+        data_type: varchar(50)
+        description: "Type of loan"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['TERM', 'REVOLVER', 'DDTL', 'BRIDGE', 'MEZZ']
+      - name: tranche_label
+        data_type: varchar(64)
+        description: "Tranche label for the loan"
+      - name: commitment_amount
+        data_type: numeric(24,2)
+        description: "Commitment amount for the loan"
+      - name: currency_code
+        data_type: varchar(3)
+        description: "Currency code for loan (ISO 3-letter code)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: start_date
+        data_type: date
+        description: "Loan start date"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: maturity_date
+        data_type: date
+        description: "Loan maturity date"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: interest_index
+        data_type: varchar(50)
+        description: "Interest rate index"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SOFR', 'EURIBOR', 'SONIA', 'FED_FUNDS', 'FIXED']
+      - name: index_tenor_days
+        data_type: integer
+        description: "Index tenor in days"
+      - name: fixed_rate_pct
+        data_type: decimal(7,4)
+        description: "Fixed rate percentage"
+      - name: spread_bps
+        data_type: integer
+        description: "Spread in basis points"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: floor_pct
+        data_type: decimal(7,4)
+        description: "Floor rate percentage"
+      - name: day_count
+        data_type: varchar(50)
+        description: "Day count convention"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['30E_360', 'ACT_360', 'ACT_365', 'ACT_ACT']
+      - name: pay_freq_months
+        data_type: integer
+        description: "Payment frequency in months"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: amortization_type
+        data_type: varchar(50)
+        description: "Amortization type"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['BULLET', 'STRAIGHT_LINE', 'CUSTOM_SCHEDULE']
+      - name: security_rank
+        data_type: varchar(50)
+        description: "Security ranking"
         tests:
           - accepted_values:
-              values: ['TERM_LOAN_B', 'UNITRANCHE', 'REVOLVER', 'DELAYED_DRAWDOWN', 'MEZZANINE', 'RCF', 'BRIDGE']
+              values: ['SENIOR_SECURED', 'SENIOR_UNSECURED', 'SECOND_LIEN', 'MEZZANINE', 'PIK']
+      - name: status
+        data_type: varchar(32)
+        description: "Current loan status"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
     
   - name: opportunity
     description: "Investment opportunity pipeline data"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique opportunity identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: name
+        data_type: varchar(255)
+        description: "Name of the investment opportunity"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: stage_id
+        data_type: uuid
+        description: "Foreign key to stage table"
+        tests:
+          - relationships:
+              to: ref('stage')
+              field: id
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table (optional)"
+        tests:
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: responsible
+        data_type: varchar(255)
+        description: "Person responsible for the opportunity"
+      - name: amount
+        data_type: numeric(20,2)
+        description: "Potential investment amount"
+      - name: next_step
+        data_type: varchar(255)
+        description: "Description of next step"
+      - name: source
+        data_type: varchar(128)
+        description: "Source of the opportunity"
+      - name: close_date
+        data_type: date
+        description: "Expected or actual close date"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"

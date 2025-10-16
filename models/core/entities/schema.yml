@@ -49,7 +49,7 @@ models:
         description: "Base currency code"
         tests:
           - relationships:
-              to: ref('dim_currency')
+              to: ref('currency')
               field: code
       - name: created_at
         data_type: text
@@ -91,14 +91,14 @@ models:
         description: "Company currency code"
         tests:
           - relationships:
-              to: ref('dim_currency')
+              to: ref('currency')
               field: code
       - name: industry_id
         data_type: uuid
         description: "Foreign key to industry table"
         tests:
           - relationships:
-              to: ref('dim_industry')
+              to: ref('industry')
               field: id
       - name: created_at
         data_type: timestamp
@@ -134,7 +134,7 @@ models:
         description: "Foreign key to investor_type table"
         tests:
           - relationships:
-              to: ref('dim_investor_type')
+              to: ref('investor_type')
               field: id
       - name: created_at
         data_type: timestamp
@@ -174,7 +174,7 @@ models:
         description: "Country code"
         tests:
           - relationships:
-              to: ref('dim_country')
+              to: ref('country')
               field: code
       - name: created_at
         data_type: timestamp

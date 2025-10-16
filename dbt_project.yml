@@ -20,9 +20,9 @@ models:
     core:
       +schema: public
       +database: core
-      dimensions:
+      reference:
         +materialized: table
-        +tags: ['bi_accessible', 'canonical', 'dimension']
+        +tags: ['bi_accessible', 'canonical', 'reference']
       entities:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'entity']

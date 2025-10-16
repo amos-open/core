@@ -43,15 +43,15 @@ models:
         data_type: timestamp
         description: "Record last update timestamp"
     
-  - name: investment
-    description: "Fund-company investment relationships"
+  - name: instrument
+    description: "Unified instrument model for all financial positions (equity and loan instruments)"
     config:
       contract:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
-        description: "Unique investment identifier (UUID)"
+        data_type: varchar(36)
+        description: "Unique instrument identifier (UUID)"
         constraints:
           - type: not_null
           - type: primary_key
@@ -59,7 +59,7 @@ models:
           - unique
           - not_null
       - name: fund_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to fund table"
         constraints:
           - type: not_null
@@ -69,21 +69,41 @@ models:
               to: ref('fund')
               field: id
       - name: company_id
-        data_type: uuid
-        description: "Foreign key to company table"
+        data_type: varchar(36)
+        description: "Foreign key to company table (required for equity instruments)"
+        tests:
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: instrument_type
+        data_type: varchar(20)
+        description: "Type of instrument (EQUITY, LOAN, CONVERTIBLE, WARRANT, FUND_INTEREST)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EQUITY', 'LOAN', 'CONVERTIBLE', 'WARRANT', 'FUND_INTEREST']
+              quote: true
+      - name: base_currency_code
+        data_type: varchar(3)
+        description: "Base currency code for the instrument"
         constraints:
           - type: not_null
         tests:
           - not_null
           - relationships:
-              to: ref('company')
-              field: id
+              to: ref('currency')
+              field: code
+      - name: inception_date
+        data_type: date
+        description: "Date when the instrument was created/acquired"
+      - name: termination_date
+        data_type: date
+        description: "Date when the instrument was terminated/disposed"
       - name: description
         data_type: text
-        description: "Investment description"
-      - name: investment_type
-        data_type: varchar(64)
-        description: "Type of investment"
+        description: "Instrument description"
       - name: created_at
         data_type: timestamp
         description: "Record creation timestamp"

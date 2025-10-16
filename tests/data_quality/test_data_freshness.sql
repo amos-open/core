@@ -40,22 +40,7 @@ WITH freshness_check AS (
         END as freshness_issue
     FROM {{ ref('investment_snapshot') }}
     
-    UNION ALL
-    
-    SELECT 
-        'loan_snapshot' as table_name,
-        MAX(as_of_date) as latest_date,
-        MAX(updated_at) as latest_update,
-        COUNT(*) as total_records,
-        COUNT(DISTINCT loan_id) as unique_entities,
-        CURRENT_DATE() - MAX(as_of_date) as days_since_latest_snapshot,
-        CURRENT_TIMESTAMP() - MAX(updated_at) as hours_since_latest_update,
-        CASE 
-            WHEN CURRENT_DATE() - MAX(as_of_date) > 2 THEN 'Loan snapshots are stale (>2 days old)'
-            WHEN CURRENT_TIMESTAMP() - MAX(updated_at) > INTERVAL '25 hours' THEN 'Loan snapshots not updated in last 25 hours'
-            ELSE NULL
-        END as freshness_issue
-    FROM {{ ref('loan_snapshot') }}
+
     
     UNION ALL
     
@@ -74,22 +59,7 @@ WITH freshness_check AS (
     FROM {{ ref('transaction') }}
     WHERE transaction_date >= CURRENT_DATE() - INTERVAL '7 days'  -- Only check recent transactions
     
-    UNION ALL
-    
-    SELECT 
-        'loan_cashflow' as table_name,
-        MAX(cashflow_date) as latest_date,
-        MAX(updated_at) as latest_update,
-        COUNT(*) as total_records,
-        COUNT(DISTINCT loan_id) as unique_entities,
-        CURRENT_DATE() - MAX(cashflow_date) as days_since_latest_snapshot,
-        CURRENT_TIMESTAMP() - MAX(updated_at) as hours_since_latest_update,
-        CASE 
-            WHEN CURRENT_TIMESTAMP() - MAX(updated_at) > INTERVAL '6 hours' THEN 'Loan cashflows not updated in last 6 hours'
-            ELSE NULL
-        END as freshness_issue
-    FROM {{ ref('loan_cashflow') }}
-    WHERE cashflow_date >= CURRENT_DATE() - INTERVAL '7 days'  -- Only check recent cashflows
+
 )
 
 SELECT 

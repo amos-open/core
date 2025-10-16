@@ -117,66 +117,7 @@ GROUP BY inv.id, c.name, f.name
 ORDER BY c.name;
 */
 
--- =============================================================================
--- CREDIT-CENTRIC JOINS
--- =============================================================================
 
--- Pattern 5: Loan with Facility and Latest Position
--- Use this pattern for credit portfolio analysis
-/*
-SELECT 
-    l.id as loan_id,
-    f.name as fund_name,
-    comp.name as borrower_name,
-    fac.facility_type,
-    l.loan_type,
-    l.commitment_amount,
-    l.maturity_date,
-    l.interest_index,
-    l.spread_bps,
-    -- Latest position
-    ls.as_of_date,
-    ls.outstanding_principal,
-    ls.total_exposure,
-    ls.risk_rating,
-    ls.days_past_due
-FROM {{ ref('loan') }} l
-JOIN {{ ref('facility') }} fac ON l.facility_id = fac.id
-JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-JOIN {{ ref('company') }} comp ON fac.borrower_company_id = comp.id
--- Latest loan snapshot
-LEFT JOIN LATERAL (
-    SELECT *
-    FROM {{ ref('loan_snapshot') }} ls_sub
-    WHERE ls_sub.loan_id = l.id
-    ORDER BY ls_sub.as_of_date DESC
-    LIMIT 1
-) ls ON TRUE
-ORDER BY ls.total_exposure DESC NULLS LAST;
-*/
-
--- Pattern 6: Facility with Syndicate Structure
--- Use this pattern for syndicate analysis
-/*
-SELECT 
-    fac.id as facility_id,
-    f.name as fund_name,
-    comp.name as borrower_name,
-    fac.facility_type,
-    fac.total_commitment,
-    -- Syndicate details
-    cp.name as lender_name,
-    cp.type as lender_type,
-    fl.syndicate_role,
-    fl.allocation_pct,
-    fl.commitment_amount
-FROM {{ ref('facility') }} fac
-JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-JOIN {{ ref('company') }} comp ON fac.borrower_company_id = comp.id
-JOIN {{ ref('facility_lender') }} fl ON fac.id = fl.facility_id
-JOIN {{ ref('counterparty') }} cp ON fl.lender_counterparty_id = cp.id
-ORDER BY fac.total_commitment DESC, fl.commitment_amount DESC;
-*/
 
 -- =============================================================================
 -- TRANSACTION-CENTRIC JOINS
@@ -197,7 +138,7 @@ SELECT
     CASE 
         WHEN t.commitment_id IS NOT NULL THEN inv.name
         WHEN t.investment_id IS NOT NULL THEN comp.name
-        WHEN t.loan_id IS NOT NULL THEN loan_comp.name
+
         ELSE 'N/A'
     END as related_entity_name
 FROM {{ ref('transaction') }} t
@@ -208,9 +149,7 @@ LEFT JOIN {{ ref('commitment') }} com ON t.commitment_id = com.id
 LEFT JOIN {{ ref('investor') }} inv ON com.investor_id = inv.id
 LEFT JOIN {{ ref('investment') }} i ON t.investment_id = i.id
 LEFT JOIN {{ ref('company') }} comp ON i.company_id = comp.id
-LEFT JOIN {{ ref('loan') }} l ON t.loan_id = l.id
-LEFT JOIN {{ ref('facility') }} loan_fac ON l.facility_id = loan_fac.id
-LEFT JOIN {{ ref('company') }} loan_comp ON loan_fac.borrower_company_id = loan_comp.id
+
 ORDER BY t.transaction_date DESC, f.name;
 */
 
@@ -246,42 +185,41 @@ ORDER BY f.vintage DESC, f.name, fs.as_of_date DESC;
 -- BRIDGE TABLE PATTERNS (Many-to-Many Relationships)
 -- =============================================================================
 
--- Pattern 9: Current Geographic/Industry Exposure for Loans
--- Use this pattern for risk analysis with time-variant allocations
+-- Pattern 9: Current Geographic/Industry Exposure for Companies
+-- Use this pattern for risk analysis with company allocations
 /*
 SELECT 
-    l.id as loan_id,
+    inv.id as investment_id,
     f.name as fund_name,
-    comp.name as borrower_name,
+    comp.name as company_name,
     -- Current country exposure
     co.name as country_name,
     co.region,
-    lc.allocation_pct as country_allocation_pct,
+    cc.allocation_pct as country_allocation_pct,
     -- Current industry exposure
     i.name as industry_name,
-    li.allocation_pct as industry_allocation_pct,
+    ci.allocation_pct as industry_allocation_pct,
     -- Latest position
-    ls.outstanding_principal,
-    ls.total_exposure
-FROM {{ ref('loan') }} l
-JOIN {{ ref('facility') }} fac ON l.facility_id = fac.id
-JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-JOIN {{ ref('company') }} comp ON fac.borrower_company_id = comp.id
--- Current country allocations (valid_to IS NULL)
-LEFT JOIN {{ ref('loan_country') }} lc ON l.id = lc.loan_id AND lc.valid_to IS NULL
-LEFT JOIN {{ ref('country') }} co ON lc.country_code = co.code
--- Current industry allocations (valid_to IS NULL)
-LEFT JOIN {{ ref('loan_industry') }} li ON l.id = li.loan_id AND li.valid_to IS NULL
-LEFT JOIN {{ ref('industry') }} i ON li.industry_id = i.id
--- Latest loan snapshot
+    is_latest.nav,
+    is_latest.cost_basis
+FROM {{ ref('investment') }} inv
+JOIN {{ ref('fund') }} f ON inv.fund_id = f.id
+JOIN {{ ref('company') }} comp ON inv.company_id = comp.id
+-- Current country allocations
+LEFT JOIN {{ ref('company_country') }} cc ON comp.id = cc.company_id
+LEFT JOIN {{ ref('country') }} co ON cc.country_code = co.code
+-- Current industry allocations
+LEFT JOIN {{ ref('company_industry') }} ci ON comp.id = ci.company_id
+LEFT JOIN {{ ref('industry') }} i ON ci.industry_id = i.id
+-- Latest investment snapshot
 LEFT JOIN LATERAL (
-    SELECT outstanding_principal, total_exposure
-    FROM {{ ref('loan_snapshot') }} ls_sub
-    WHERE ls_sub.loan_id = l.id
-    ORDER BY ls_sub.as_of_date DESC
+    SELECT nav, cost_basis
+    FROM {{ ref('investment_snapshot') }} is_sub
+    WHERE is_sub.investment_id = inv.id
+    ORDER BY is_sub.as_of_date DESC
     LIMIT 1
-) ls ON TRUE
-ORDER BY ls.total_exposure DESC NULLS LAST;
+) is_latest ON TRUE
+ORDER BY is_latest.nav DESC NULLS LAST;
 */
 
 -- =============================================================================

@@ -36,7 +36,7 @@ amos_core/             # This package
 │   ├── core/          # Canonical business layer
 │   │   ├── entities/  # Core business entities (fund, company, investor, counterparty)
 │   │   ├── reference/ # Reference/lookup tables (currency, country, industry)
-│   │   ├── relationships/ # Entity relationships (commitment, investment, facility)
+│   │   ├── relationships/ # Entity relationships (commitment, investment, opportunity)
 │   │   ├── bridge/    # Many-to-many relationship tables
 │   │   ├── snapshots/ # Fact tables with metrics and transactions
 │   │   └── supporting/# Supporting/detail tables
@@ -150,7 +150,7 @@ dbt deps && dbt run && dbt test
 - **Entities**: `fund`, `company`, `investor`, `counterparty`
 - **Dimensions**: `dim_currency`, `dim_country`, `dim_industry`
 - **Facts**: `fct_transaction`, `fct_fund_snapshot`
-- **Relationships**: `commitment`, `investment`, `facility`
+- **Relationships**: `commitment`, `investment`, `opportunity`
 - **Marts**: `company_metrics`, `investor_metrics`
 
 ## Tags

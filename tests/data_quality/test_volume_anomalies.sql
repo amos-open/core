@@ -71,26 +71,7 @@ WITH volume_analysis AS (
     WHERE as_of_date >= CURRENT_DATE() - INTERVAL '30 days'
     GROUP BY as_of_date
     
-    UNION ALL
-    
-    -- Loan cashflow volume analysis
-    SELECT 
-        'loan_cashflow_volume' as anomaly_type,
-        DATE(cashflow_date) as analysis_date,
-        COUNT(*) as daily_count,
-        SUM(ABS(total_amount)) as daily_volume,
-        AVG(COUNT(*)) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) as avg_count_7day,
-        AVG(SUM(ABS(total_amount))) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) as avg_volume_7day,
-        CASE 
-            WHEN COUNT(*) > 3 * AVG(COUNT(*)) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) 
-                THEN 'Loan cashflow count spike: ' || COUNT(*) || ' vs 7-day avg ' || ROUND(AVG(COUNT(*)) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
-            WHEN SUM(ABS(total_amount)) > 5 * AVG(SUM(ABS(total_amount))) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) 
-                THEN 'Loan cashflow volume spike: ' || ROUND(SUM(ABS(total_amount)), 0) || ' vs 7-day avg ' || ROUND(AVG(SUM(ABS(total_amount))) OVER (ORDER BY DATE(cashflow_date) ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
-            ELSE NULL
-        END as anomaly_description
-    FROM {{ ref('loan_cashflow') }}
-    WHERE cashflow_date >= CURRENT_DATE() - INTERVAL '30 days'
-    GROUP BY DATE(cashflow_date)
+
 )
 
 SELECT 

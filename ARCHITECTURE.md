@@ -41,7 +41,7 @@ amos_core/
 │   ├── core/
 │   │   ├── entities/        # fund, company, investor, counterparty
 │   │   ├── dimensions/      # dim_currency, dim_country, dim_industry
-│   │   ├── relationships/   # commitment, investment, facility
+│   │   ├── relationships/   # commitment, investment, opportunity
 │   │   ├── bridge/          # many-to-many relationships
 │   │   ├── facts/           # fct_transaction, fct_fund_snapshot
 │   │   └── supporting/      # supporting detail tables

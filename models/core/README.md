@@ -23,7 +23,7 @@ Core Package (this package)
 
 - **reference/**: Reference/lookup tables (dim_currency, dim_country, etc.)
 - **entities/**: Core business entities (fund, company, investor, counterparty)
-- **relationships/**: Entity relationships (commitment, investment, facility, loan, opportunity)
+- **relationships/**: Entity relationships (commitment, investment, opportunity)
 - **bridge/**: Many-to-many relationship tables
 - **snapshots/**: Fact tables with metrics and transactions
 - **supporting/**: Supporting/detail tables

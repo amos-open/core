@@ -48,73 +48,7 @@ WITH allocation_issues AS (
     JOIN {{ ref('company') }} c ON cc.company_id = c.id
     GROUP BY company_id, c.name
     
-    UNION ALL
-    
-    -- Facility Lender Allocations
-    SELECT 
-        'facility_lender' as table_name,
-        facility_id::text as entity_id,
-        f.name || ' - ' || fac.facility_type as entity_name,
-        NULL as valid_from,
-        SUM(allocation_pct) as total_allocation_pct,
-        COUNT(*) as allocation_count,
-        COUNT(CASE WHEN syndicate_role = 'AGENT' THEN 1 END) as primary_count,
-        CASE 
-            WHEN ABS(SUM(allocation_pct) - 100.0) > 0.01 THEN 'Allocation percentages do not sum to 100%'
-            WHEN COUNT(CASE WHEN syndicate_role = 'AGENT' THEN 1 END) > 1 THEN 'Multiple agents not allowed'
-            WHEN MIN(allocation_pct) < 0 OR MAX(allocation_pct) > 100 THEN 'Allocation percentage out of range'
-            ELSE NULL
-        END as issue_description
-    FROM {{ ref('facility_lender') }} fl
-    JOIN {{ ref('facility') }} fac ON fl.facility_id = fac.id
-    JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-    GROUP BY facility_id, f.name, fac.facility_type
-    
-    UNION ALL
-    
-    -- Loan Country Allocations (Current only - valid_to IS NULL)
-    SELECT 
-        'loan_country' as table_name,
-        loan_id::text as entity_id,
-        f.name || ' - ' || l.loan_type as entity_name,
-        lc.valid_from,
-        SUM(allocation_pct) as total_allocation_pct,
-        COUNT(*) as allocation_count,
-        0 as primary_count,  -- No primary flag for loan allocations
-        CASE 
-            WHEN ABS(SUM(allocation_pct) - 100.0) > 0.01 THEN 'Allocation percentages do not sum to 100%'
-            WHEN MIN(allocation_pct) < 0 OR MAX(allocation_pct) > 100 THEN 'Allocation percentage out of range'
-            ELSE NULL
-        END as issue_description
-    FROM {{ ref('loan_country') }} lc
-    JOIN {{ ref('loan') }} l ON lc.loan_id = l.id
-    JOIN {{ ref('facility') }} fac ON l.facility_id = fac.id
-    JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-    WHERE lc.valid_to IS NULL  -- Current allocations only
-    GROUP BY loan_id, f.name, l.loan_type, lc.valid_from
-    
-    UNION ALL
-    
-    -- Loan Industry Allocations (Current only - valid_to IS NULL)
-    SELECT 
-        'loan_industry' as table_name,
-        loan_id::text as entity_id,
-        f.name || ' - ' || l.loan_type as entity_name,
-        li.valid_from,
-        SUM(allocation_pct) as total_allocation_pct,
-        COUNT(*) as allocation_count,
-        0 as primary_count,  -- No primary flag for loan allocations
-        CASE 
-            WHEN ABS(SUM(allocation_pct) - 100.0) > 0.01 THEN 'Allocation percentages do not sum to 100%'
-            WHEN MIN(allocation_pct) < 0 OR MAX(allocation_pct) > 100 THEN 'Allocation percentage out of range'
-            ELSE NULL
-        END as issue_description
-    FROM {{ ref('loan_industry') }} li
-    JOIN {{ ref('loan') }} l ON li.loan_id = l.id
-    JOIN {{ ref('facility') }} fac ON l.facility_id = fac.id
-    JOIN {{ ref('fund') }} f ON fac.fund_id = f.id
-    WHERE li.valid_to IS NULL  -- Current allocations only
-    GROUP BY loan_id, f.name, l.loan_type, li.valid_from
+
 )
 
 SELECT 

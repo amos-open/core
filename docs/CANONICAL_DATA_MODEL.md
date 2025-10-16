@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AMOS canonical data layer provides clean, validated, and business-ready entity and relationship tables with stable contracts that downstream consumers can rely on. This layer serves as the single source of truth for all AMOS business entities.
+The AMOS canonical data layer provides clean, validated, and business-ready entity and relationship tables with stable contracts that downstream consumers can rely on. This layer serves as the single source of truth for all business entities in your organization.
 
 ## Design Principles
 
@@ -87,7 +87,7 @@ The AMOS canonical data layer provides clean, validated, and business-ready enti
 #### Syndicate Structure
 - **facility_lender**: Lender participation in facilities
 
-### Fact Entities (Metrics and Transactions)
+### Snapshots and Transactions
 
 #### Performance Snapshots
 - **fund_snapshot**: Daily fund performance metrics

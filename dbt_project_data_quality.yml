@@ -1,0 +1,210 @@
+# Data Quality Configuration for AMOS Canonical Layer
+# This file defines data quality monitoring and alerting configurations
+
+# Test configurations
+tests:
+  data_quality:
+    +tags: ["data_quality"]
+    +severity: warn
+    
+  data_quality.test_fund_performance_metrics:
+    +severity: error
+    +tags: ["critical", "fund_performance"]
+    
+  data_quality.test_loan_cashflow_consistency:
+    +severity: error
+    +tags: ["critical", "loan_cashflow"]
+    
+  data_quality.test_allocation_percentages:
+    +severity: warn
+    +tags: ["business_rules", "allocations"]
+    
+  data_quality.test_data_freshness:
+    +severity: warn
+    +tags: ["freshness", "monitoring"]
+    
+  data_quality.test_volume_anomalies:
+    +severity: warn
+    +tags: ["volume_anomaly", "monitoring"]
+
+# Data quality thresholds and alerting rules
+vars:
+  data_quality_config:
+    # Freshness thresholds (in hours)
+    freshness_thresholds:
+      fund_snapshot: 25
+      investment_snapshot: 25
+      loan_snapshot: 25
+      transaction: 6
+      loan_cashflow: 6
+    
+    # Volume anomaly detection thresholds
+    volume_anomaly_thresholds:
+      transaction_count_spike_multiplier: 2.0
+      transaction_count_drop_multiplier: 0.3
+      transaction_volume_spike_multiplier: 3.0
+      cashflow_count_spike_multiplier: 3.0
+      cashflow_volume_spike_multiplier: 5.0
+      snapshot_count_drop_multiplier: 0.5
+      snapshot_coverage_drop_multiplier: 0.7
+    
+    # Business metric validation thresholds
+    business_metric_thresholds:
+      max_management_fee: 0.05  # 5%
+      max_hurdle_rate: 0.20     # 20%
+      max_carried_interest: 0.30 # 30%
+      max_allocation_variance: 0.01  # 1% tolerance for allocation sums
+      max_dpi_calculation_variance: 0.01
+      max_rvpi_calculation_variance: 0.01
+      max_coc_calculation_variance: 0.01
+    
+    # Alerting configuration
+    alerts:
+      email_recipients:
+        - "data-engineering@company.com"
+        - "finance@company.com"
+      
+      slack_channels:
+        critical: "#data-alerts-critical"
+        warning: "#data-alerts-warning"
+        info: "#data-monitoring"
+      
+      alert_frequency:
+        critical: "immediate"
+        error: "immediate" 
+        warn: "daily_summary"
+        info: "weekly_summary"
+    
+    # Data quality SLA targets
+    sla_targets:
+      data_freshness_sla: 24  # hours
+      data_quality_score_target: 0.95  # 95%
+      critical_test_failure_tolerance: 0  # Zero tolerance for critical failures
+      warning_test_failure_tolerance: 5  # Max 5 warning failures per day
+    
+    # Monitoring schedules
+    monitoring_schedule:
+      freshness_check: "0 */4 * * *"  # Every 4 hours
+      volume_anomaly_check: "0 8,20 * * *"  # 8 AM and 8 PM daily
+      business_metric_validation: "0 9 * * *"  # 9 AM daily
+      comprehensive_quality_report: "0 6 * * 1"  # 6 AM every Monday
+    
+    # Data retention for quality metrics
+    quality_metrics_retention:
+      test_results: 90  # days
+      alert_history: 365  # days
+      quality_trends: 730  # days (2 years)
+
+# Model-specific data quality configurations
+models:
+  fund_snapshot:
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "total_called <= total_commitment OR total_commitment IS NULL"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+      - dbt_utils.expression_is_true:
+          expression: "dpi >= 0"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+      - dbt_utils.expression_is_true:
+          expression: "rvpi >= 0"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+    
+  investment_snapshot:
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "nav >= 0 OR nav IS NULL"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+      - dbt_utils.expression_is_true:
+          expression: "ownership_percentage BETWEEN 0 AND 100 OR ownership_percentage IS NULL"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+    
+  loan_snapshot:
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "outstanding_principal >= 0 OR outstanding_principal IS NULL"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+      - dbt_utils.expression_is_true:
+          expression: "total_exposure >= outstanding_principal OR total_exposure IS NULL OR outstanding_principal IS NULL"
+          config:
+            severity: error
+            tags: ["critical", "business_rule"]
+    
+  transaction:
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "transaction_date <= CURRENT_DATE()"
+          config:
+            severity: error
+            tags: ["critical", "data_integrity"]
+      - relationships:
+          to: ref('currency')
+          field: code
+          column_name: currency_code
+          config:
+            severity: error
+            tags: ["critical", "referential_integrity"]
+
+# Custom data quality macros and tests
+macros:
+  data_quality:
+    - name: test_allocation_sum
+      description: "Test that allocation percentages sum to 100% within tolerance"
+      sql: |
+        SELECT *
+        FROM (
+          SELECT 
+            {{ group_by_columns }},
+            SUM(allocation_pct) as total_allocation,
+            ABS(SUM(allocation_pct) - 100.0) as variance
+          FROM {{ model }}
+          GROUP BY {{ group_by_columns }}
+        ) allocation_check
+        WHERE variance > {{ var('data_quality_config')['business_metric_thresholds']['max_allocation_variance'] }}
+    
+    - name: test_metric_calculation
+      description: "Test that calculated metrics match expected formulas"
+      sql: |
+        SELECT *
+        FROM {{ model }}
+        WHERE ABS({{ actual_column }} - {{ expected_formula }}) > {{ tolerance }}
+          AND {{ actual_column }} IS NOT NULL
+          AND {{ expected_formula }} IS NOT NULL
+
+# Documentation for data quality framework
+docs:
+  data_quality_framework: |
+    # Data Quality Framework
+    
+    ## Overview
+    The AMOS canonical layer implements a comprehensive data quality framework with:
+    - Automated data quality tests
+    - Real-time monitoring and alerting
+    - Business rule validation
+    - Data freshness monitoring
+    - Volume anomaly detection
+    
+    ## Test Categories
+    1. **Critical Tests**: Must pass for data to be considered valid
+    2. **Business Rule Tests**: Validate business logic and calculations
+    3. **Freshness Tests**: Ensure data is updated within SLA timeframes
+    4. **Volume Tests**: Detect unusual data patterns and anomalies
+    
+    ## Alerting
+    - Critical failures trigger immediate alerts
+    - Warning failures are summarized in daily reports
+    - Trends and patterns are reported weekly
+    
+    ## Monitoring Dashboard
+    Access the data quality dashboard at: [Data Quality Dashboard URL]

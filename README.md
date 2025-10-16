@@ -35,10 +35,10 @@ amos_core/             # This package
 ├── models/
 │   ├── core/          # Canonical business layer
 │   │   ├── entities/  # Core business entities (fund, company, investor, counterparty)
-│   │   ├── dimensions/# Reference/lookup tables (currency, country, industry)
+│   │   ├── reference/ # Reference/lookup tables (currency, country, industry)
 │   │   ├── relationships/ # Entity relationships (commitment, investment, facility)
 │   │   ├── bridge/    # Many-to-many relationship tables
-│   │   ├── facts/     # Fact tables with metrics and transactions
+│   │   ├── snapshots/ # Fact tables with metrics and transactions
 │   │   └── supporting/# Supporting/detail tables
 │   └── marts/         # Final BI-ready models
 │       ├── *_metrics.sql # Complex business metrics
@@ -57,7 +57,7 @@ The recommended way to get started is to use the `amos_runner` starter project, 
 
 ```bash
 # Clone the amos_runner starter project
-git clone https://github.com/amos/amos_runner.git my_amos_project
+git clone https://github.com/amos-open/amos_runner.git my_amos_project
 cd my_amos_project
 
 # Install dependencies (includes amos_core and source_example)
@@ -81,9 +81,9 @@ If you prefer to set up manually, create a new dbt project and add dependencies:
 ```yaml
 # packages.yml
 packages:
-  - package: amos/amos_core
+  - package: amos-open/core
     version: "0.0.1"
-  - package: amos/source_example
+  - package: amos-open/source_example
     version: ">=0.0.1"
 ```
 
@@ -123,7 +123,7 @@ All core entities use enforced data contracts with:
 
 ### Option 1: amos_runner (Recommended)
 ```bash
-git clone https://github.com/amos/amos_runner.git my_project
+git clone https://github.com/amos-open/amos_runner.git my_project
 cd my_project
 dbt deps && dbt run && dbt test
 ```
@@ -136,9 +136,9 @@ cd my_amos_project
 
 # Add packages.yml with amos_core and source_example
 echo "packages:
-  - package: amos/amos_core
+  - package: amos-open/core
     version: \"0.0.1\"
-  - package: amos/source_example
+  - package: amos-open/source_example
     version: \">=0.0.1\"" > packages.yml
 
 # Install and run

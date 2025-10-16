@@ -21,20 +21,20 @@ Core Package (this package)
 
 ## Directory Structure
 
-- **dimensions/**: Reference/lookup tables (dim_currency, dim_country, etc.)
+- **reference/**: Reference/lookup tables (dim_currency, dim_country, etc.)
 - **entities/**: Core business entities (fund, company, investor, counterparty)
 - **relationships/**: Entity relationships (commitment, investment, facility, loan, opportunity)
 - **bridge/**: Many-to-many relationship tables
-- **facts/**: Fact tables with metrics and transactions
+- **snapshots/**: Fact tables with metrics and transactions
 - **supporting/**: Supporting/detail tables
 
 ## Materialization Strategy
 
-- **Dimensions**: Materialized as tables (small, infrequently changing)
+- **Reference**: Materialized as tables (small, infrequently changing)
 - **Entities**: Materialized as tables (master data requiring fast lookup)
 - **Relationships**: Materialized as tables (business relationships)
 - **Bridge**: Materialized as tables (many-to-many relationships)
-- **Facts**: Materialized incrementally (large, growing datasets)
+- **Snapshots**: Materialized incrementally (large, growing datasets)
 - **Supporting**: Materialized as tables (detail/supporting data)
 
 ## Database Configuration

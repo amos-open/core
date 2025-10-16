@@ -32,10 +32,10 @@ models:
       bridge:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'bridge']
-      facts:
+      snapshots:
         +materialized: incremental
         +on_schema_change: 'fail'
-        +tags: ['bi_accessible', 'canonical', 'fact']
+        +tags: ['bi_accessible', 'canonical', 'snapshot']
       supporting:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'supporting']

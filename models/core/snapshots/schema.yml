@@ -2,22 +2,537 @@ version: 2
 
 models:
   - name: fund_snapshot
-    description: "Point-in-time fund performance metrics with incremental loading"
+    description: "Point-in-time fund performance metrics with incremental loading. Updated daily with fund NAV, commitment, and performance calculations."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: as_of_date
+        data_type: date
+        description: "Snapshot date for the performance metrics"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: total_nav
+        data_type: numeric(20,2)
+        description: "Total Net Asset Value as of the snapshot date"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_commitment
+        data_type: numeric(20,2)
+        description: "Total commitment amount for the fund"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_called
+        data_type: numeric(20,2)
+        description: "Total amount called from investors"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_distributed
+        data_type: numeric(20,2)
+        description: "Total amount distributed to investors"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: dpi
+        data_type: decimal(10,4)
+        description: "Distributions to Paid-In capital ratio"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: rvpi
+        data_type: decimal(10,4)
+        description: "Residual Value to Paid-In capital ratio"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: expected_coc
+        data_type: decimal(10,4)
+        description: "Expected Cash-on-Cash return multiple"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: "fund_id || '|' || as_of_date"
+      - dbt_utils.expression_is_true:
+          expression: "total_called <= total_commitment OR total_commitment IS NULL OR total_called IS NULL"
+          config:
+            severity: error
+      - dbt_utils.expression_is_true:
+          expression: "as_of_date <= CURRENT_DATE()"
+          config:
+            severity: error
     
   - name: commitment_snapshot
     description: "Point-in-time commitment snapshots"
     
   - name: investment_snapshot
-    description: "Point-in-time investment valuations"
+    description: "Point-in-time investment valuations with NAV calculations and ownership tracking. Updated daily with investment performance metrics."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: investment_id
+        data_type: uuid
+        description: "Foreign key to investment table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('investment')
+              field: id
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: as_of_date
+        data_type: date
+        description: "Snapshot date for the investment valuation"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: nav
+        data_type: numeric(20,2)
+        description: "Net Asset Value of the investment"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: cost_basis
+        data_type: numeric(20,2)
+        description: "Original cost basis of the investment"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: unrealized_gain_loss
+        data_type: numeric(20,2)
+        description: "Unrealized gain or loss (NAV - cost_basis)"
+      - name: ownership_percentage
+        data_type: decimal(5,2)
+        description: "Ownership percentage in the company"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      - name: shares_outstanding
+        data_type: numeric(20,0)
+        description: "Number of shares outstanding"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: share_price
+        data_type: numeric(20,4)
+        description: "Price per share"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: "investment_id || '|' || as_of_date"
+      - dbt_utils.expression_is_true:
+          expression: "as_of_date <= CURRENT_DATE()"
+          config:
+            severity: error
     
   - name: loan_snapshot
-    description: "Point-in-time loan positions and valuations"
+    description: "Point-in-time loan positions and valuations with risk metrics. Updated daily with loan performance and risk assessment data."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: loan_id
+        data_type: uuid
+        description: "Foreign key to loan table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('loan')
+              field: id
+      - name: facility_id
+        data_type: uuid
+        description: "Foreign key to facility table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('facility')
+              field: id
+      - name: as_of_date
+        data_type: date
+        description: "Snapshot date for the loan position"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: outstanding_principal
+        data_type: numeric(20,2)
+        description: "Outstanding principal balance"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: accrued_interest
+        data_type: numeric(20,2)
+        description: "Accrued interest amount"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_exposure
+        data_type: numeric(20,2)
+        description: "Total exposure (principal + accrued interest)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: current_ltv
+        data_type: decimal(5,2)
+        description: "Current Loan-to-Value ratio as percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 200
+              inclusive: true
+      - name: days_past_due
+        data_type: integer
+        description: "Number of days past due"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: risk_rating
+        data_type: varchar(10)
+        description: "Risk rating classification"
+        tests:
+          - accepted_values:
+              values: ['AAA', 'AA', 'A', 'BBB', 'BB', 'B', 'CCC', 'CC', 'C', 'D']
+      - name: provision_amount
+        data_type: numeric(20,2)
+        description: "Provision amount for potential losses"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - unique:
+          column_name: "loan_id || '|' || as_of_date"
+      - dbt_utils.expression_is_true:
+          expression: "as_of_date <= CURRENT_DATE()"
+          config:
+            severity: error
     
   - name: company_performance_snapshot
     description: "Point-in-time company performance metrics"
     
   - name: transaction
-    description: "All financial transactions across the platform"
+    description: "All financial transactions across the platform with comprehensive transaction tracking. Includes capital calls, distributions, investments, loan activities, and operational transactions."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique transaction identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: investment_id
+        data_type: uuid
+        description: "Foreign key to investment table (for investment-related transactions)"
+        tests:
+          - relationships:
+              to: ref('investment')
+              field: id
+      - name: loan_id
+        data_type: uuid
+        description: "Foreign key to loan table (for loan-related transactions)"
+        tests:
+          - relationships:
+              to: ref('loan')
+              field: id
+      - name: commitment_id
+        data_type: uuid
+        description: "Foreign key to commitment table (for capital call/distribution transactions)"
+        tests:
+          - relationships:
+              to: ref('commitment')
+              field: id
+      - name: tx_type
+        data_type: varchar(20)
+        description: "Transaction type classification"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['CAPITAL_CALL', 'DISTRIBUTION', 'INVESTMENT', 'DIVESTMENT', 'LOAN_DRAW', 'LOAN_REPAYMENT', 'INTEREST_PAYMENT', 'FEE_PAYMENT', 'EXPENSE', 'INCOME', 'TRANSFER']
+      - name: transaction_date
+        data_type: date
+        description: "Date when the transaction occurred"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: amount
+        data_type: numeric(20,2)
+        description: "Transaction amount (positive for inflows, negative for outflows)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: currency_code
+        data_type: varchar(3)
+        description: "Currency code for the transaction amount"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: description
+        data_type: text
+        description: "Transaction description or memo"
+      - name: reference_number
+        data_type: varchar(100)
+        description: "External reference number or identifier"
+      - name: counterparty_id
+        data_type: uuid
+        description: "Foreign key to counterparty table (for external transactions)"
+        tests:
+          - relationships:
+              to: ref('counterparty')
+              field: id
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "transaction_date <= CURRENT_DATE()"
+          config:
+            severity: error
     
   - name: loan_cashflow
-    description: "Detailed loan payment and draw tracking"
+    description: "Detailed loan payment and draw tracking with interest calculations. Records all loan cashflow activities including draws, payments, and interest accruals."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique loan cashflow identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: loan_id
+        data_type: uuid
+        description: "Foreign key to loan table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('loan')
+              field: id
+      - name: facility_id
+        data_type: uuid
+        description: "Foreign key to facility table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('facility')
+              field: id
+      - name: loan_cashflow_type
+        data_type: varchar(20)
+        description: "Type of loan cashflow activity"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DRAW', 'PRINCIPAL_PAYMENT', 'INTEREST_PAYMENT', 'FEE_PAYMENT', 'PREPAYMENT', 'DEFAULT', 'RECOVERY']
+      - name: cashflow_date
+        data_type: date
+        description: "Date when the cashflow occurred"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: principal_amount
+        data_type: numeric(20,2)
+        description: "Principal component of the cashflow"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: interest_amount
+        data_type: numeric(20,2)
+        description: "Interest component of the cashflow"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: fee_amount
+        data_type: numeric(20,2)
+        description: "Fee component of the cashflow"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_amount
+        data_type: numeric(20,2)
+        description: "Total cashflow amount (sum of principal, interest, and fees)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: interest_rate
+        data_type: decimal(7,4)
+        description: "Interest rate applied for the period (as decimal)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: days_in_period
+        data_type: integer
+        description: "Number of days in the interest calculation period"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 366
+              inclusive: true
+      - name: outstanding_balance_before
+        data_type: numeric(20,2)
+        description: "Outstanding loan balance before this cashflow"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: outstanding_balance_after
+        data_type: numeric(20,2)
+        description: "Outstanding loan balance after this cashflow"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+        constraints:
+          - type: not_null
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+        constraints:
+          - type: not_null
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "cashflow_date <= CURRENT_DATE()"
+          config:
+            severity: error
+      - dbt_utils.expression_is_true:
+          expression: "total_amount = COALESCE(principal_amount, 0) + COALESCE(interest_amount, 0) + COALESCE(fee_amount, 0) OR (principal_amount IS NULL AND interest_amount IS NULL AND fee_amount IS NULL)"
+          config:
+            severity: error

@@ -2,25 +2,737 @@ version: 2
 
 models:
   - name: share_class
-    description: "Share class details for equity investments"
+    description: "Share class details for equity investments with ownership and rights information"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique share class identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: share_class_type
+        data_type: varchar(64)
+        description: "Type of share class (e.g., Common, Preferred Series A)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: share_class_name
+        data_type: varchar(255)
+        description: "Display name of the share class"
+      - name: par_value
+        data_type: numeric(20,4)
+        description: "Par value per share"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: liquidation_preference
+        data_type: numeric(7,4)
+        description: "Liquidation preference multiplier"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: dividend_rate
+        data_type: numeric(7,4)
+        description: "Dividend rate percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: voting_rights
+        data_type: boolean
+        description: "Whether this share class has voting rights"
+      - name: anti_dilution_protection
+        data_type: varchar(64)
+        description: "Type of anti-dilution protection"
+      - name: participation_rights
+        data_type: boolean
+        description: "Whether this share class has participation rights"
+      - name: conversion_ratio
+        data_type: numeric(10,4)
+        description: "Conversion ratio to common shares"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - company_id
+            - share_class_type
+            - share_class_name
     
   - name: shareholder
-    description: "Shareholder information and ownership tracking"
+    description: "Shareholder information and ownership tracking with detailed rights and vesting"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique shareholder record identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: investor_id
+        data_type: uuid
+        description: "Foreign key to investor table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('investor')
+              field: id
+      - name: share_class_id
+        data_type: uuid
+        description: "Foreign key to share_class table"
+        tests:
+          - relationships:
+              to: ref('share_class')
+              field: id
+      - name: shares_owned
+        data_type: numeric(20,0)
+        description: "Number of shares owned"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: ownership_percentage
+        data_type: numeric(7,4)
+        description: "Ownership percentage of the company"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      - name: acquisition_date
+        data_type: date
+        description: "Date when shares were acquired"
+      - name: acquisition_price_per_share
+        data_type: numeric(20,4)
+        description: "Price paid per share at acquisition"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: vesting_schedule
+        data_type: text
+        description: "Description of vesting schedule"
+      - name: board_rights
+        data_type: boolean
+        description: "Whether shareholder has board representation rights"
+      - name: information_rights
+        data_type: boolean
+        description: "Whether shareholder has information rights"
+      - name: tag_along_rights
+        data_type: boolean
+        description: "Whether shareholder has tag-along rights"
+      - name: drag_along_rights
+        data_type: boolean
+        description: "Whether shareholder has drag-along rights"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - company_id
+            - investor_id
+            - share_class_id
     
   - name: investment_round
-    description: "Investment round details and valuations"
+    description: "Investment round details and valuations with comprehensive round information"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique investment round identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: round_name
+        data_type: varchar(255)
+        description: "Name of the investment round"
+      - name: round_type
+        data_type: varchar(64)
+        description: "Type of investment round (e.g., Seed, Series A, Series B)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Seed', 'Series A', 'Series B', 'Series C', 'Series D', 'Bridge', 'Convertible', 'SAFE', 'Growth', 'Pre-IPO']
+      - name: round_date
+        data_type: date
+        description: "Date of the investment round closing"
+      - name: pre_money_valuation
+        data_type: numeric(20,2)
+        description: "Pre-money valuation of the company"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: post_money_valuation
+        data_type: numeric(20,2)
+        description: "Post-money valuation of the company"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_amount_raised
+        data_type: numeric(20,2)
+        description: "Total amount raised in this round"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: lead_investor_id
+        data_type: uuid
+        description: "Foreign key to investor table for lead investor"
+        tests:
+          - relationships:
+              to: ref('investor')
+              field: id
+      - name: share_class_id
+        data_type: uuid
+        description: "Foreign key to share_class table for shares issued"
+        tests:
+          - relationships:
+              to: ref('share_class')
+              field: id
+      - name: shares_issued
+        data_type: numeric(20,0)
+        description: "Number of shares issued in this round"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: price_per_share
+        data_type: numeric(20,4)
+        description: "Price per share in this round"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: liquidation_preference
+        data_type: numeric(7,4)
+        description: "Liquidation preference for this round"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: anti_dilution_protection
+        data_type: varchar(64)
+        description: "Type of anti-dilution protection for this round"
+      - name: board_seats
+        data_type: integer
+        description: "Number of board seats allocated to this round"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - company_id
+            - round_name
+            - round_date
     
   - name: commitment_record
     description: "Detailed commitment records and transactions"
     
   - name: company_valuation
-    description: "Company valuation history and methodologies"
+    description: "Company valuation history and methodologies with temporal tracking"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique company valuation identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: valuation_date
+        data_type: date
+        description: "Date of the valuation"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: valuation_type
+        data_type: varchar(64)
+        description: "Type of valuation (Fair Value, Mark-to-Market, etc.)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Fair Value', 'Mark-to-Market', 'Cost', 'Liquidation', 'IPO', 'Transaction', 'DCF', 'Multiples']
+      - name: valuation_amount
+        data_type: numeric(20,2)
+        description: "Valuation amount"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: valuation_currency_code
+        data_type: varchar(3)
+        description: "Currency code for valuation amount"
+        tests:
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: valuation_method
+        data_type: varchar(128)
+        description: "Specific valuation method used"
+      - name: valuation_policy_id
+        data_type: uuid
+        description: "Foreign key to valuation_policy table"
+        tests:
+          - relationships:
+              to: ref('valuation_policy')
+              field: id
+      - name: external_valuer
+        data_type: varchar(255)
+        description: "Name of external valuation firm if applicable"
+      - name: valuation_notes
+        data_type: text
+        description: "Additional notes about the valuation"
+      - name: effective_from
+        data_type: date
+        description: "Start date for valuation validity"
+      - name: effective_to
+        data_type: date
+        description: "End date for valuation validity"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - company_id
+            - valuation_date
+            - valuation_type
     
   - name: company_dividend_forecast
-    description: "Company dividend forecasts and projections"
+    description: "Company dividend forecasts and projections with confidence levels"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique dividend forecast identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        data_type: uuid
+        description: "Foreign key to company table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('company')
+              field: id
+      - name: forecast_date
+        data_type: date
+        description: "Date when forecast was made"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: forecast_period_start
+        data_type: date
+        description: "Start date of forecast period"
+      - name: forecast_period_end
+        data_type: date
+        description: "End date of forecast period"
+      - name: dividend_per_share
+        data_type: numeric(20,4)
+        description: "Forecasted dividend per share"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: total_dividend_amount
+        data_type: numeric(20,2)
+        description: "Total forecasted dividend amount"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: dividend_currency_code
+        data_type: varchar(3)
+        description: "Currency code for dividend amounts"
+        tests:
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: dividend_type
+        data_type: varchar(64)
+        description: "Type of dividend (Regular, Special, etc.)"
+        tests:
+          - accepted_values:
+              values: ['Regular', 'Special', 'Interim', 'Final', 'Liquidating']
+      - name: payment_frequency
+        data_type: varchar(32)
+        description: "Frequency of dividend payments"
+        tests:
+          - accepted_values:
+              values: ['Annual', 'Semi-Annual', 'Quarterly', 'Monthly', 'One-Time']
+      - name: confidence_level
+        data_type: numeric(5,2)
+        description: "Confidence level of forecast (0-100%)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      - name: forecast_method
+        data_type: varchar(128)
+        description: "Method used for forecasting"
+      - name: forecast_assumptions
+        data_type: text
+        description: "Key assumptions underlying the forecast"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - company_id
+            - forecast_date
+            - forecast_period_start
+            - forecast_period_end
     
   - name: valuation_policy
-    description: "Valuation policies and methodologies"
+    description: "Valuation policies and methodologies with temporal validity"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique valuation policy identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: fund_id
+        data_type: uuid
+        description: "Foreign key to fund table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+      - name: policy_name
+        data_type: varchar(255)
+        description: "Name of the valuation policy"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: policy_version
+        data_type: varchar(32)
+        description: "Version of the policy"
+      - name: valuation_methodology
+        data_type: varchar(128)
+        description: "Primary valuation methodology"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Fair Value', 'Cost', 'Market', 'Income', 'Hybrid', 'IPEV Guidelines', 'ASC 820', 'IFRS 13']
+      - name: frequency
+        data_type: varchar(32)
+        description: "Frequency of valuations"
+        tests:
+          - accepted_values:
+              values: ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual', 'Event-Driven']
+      - name: effective_from
+        data_type: date
+        description: "Start date for policy validity"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: effective_to
+        data_type: date
+        description: "End date for policy validity"
+      - name: discount_rates
+        data_type: text
+        description: "Discount rates methodology and ranges"
+      - name: multiples_approach
+        data_type: text
+        description: "Multiples approach methodology"
+      - name: dcf_assumptions
+        data_type: text
+        description: "DCF model assumptions and parameters"
+      - name: market_approach_criteria
+        data_type: text
+        description: "Market approach selection criteria"
+      - name: illiquidity_discount
+        data_type: numeric(5,2)
+        description: "Illiquidity discount percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      - name: control_premium
+        data_type: numeric(5,2)
+        description: "Control premium percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: approval_process
+        data_type: text
+        description: "Description of valuation approval process"
+      - name: external_validation_required
+        data_type: boolean
+        description: "Whether external validation is required"
+      - name: policy_document_url
+        data_type: varchar(512)
+        description: "URL to full policy document"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - fund_id
+            - policy_name
+            - effective_from
     
   - name: loan_interest_period
-    description: "Loan interest period calculations and accruals"
+    description: "Loan interest period calculations and accruals with automated interest calculations"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: uuid
+        description: "Unique loan interest period identifier"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: loan_id
+        data_type: uuid
+        description: "Foreign key to loan table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('loan')
+              field: id
+      - name: period_start_date
+        data_type: date
+        description: "Start date of interest period"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: period_end_date
+        data_type: date
+        description: "End date of interest period"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: days_in_period
+        data_type: integer
+        description: "Number of days in the interest period"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: true
+      - name: interest_rate
+        data_type: numeric(7,4)
+        description: "Annual interest rate percentage for this period"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: base_rate
+        data_type: numeric(7,4)
+        description: "Base rate component (e.g., LIBOR, SOFR)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: margin
+        data_type: numeric(7,4)
+        description: "Margin over base rate"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: outstanding_principal
+        data_type: numeric(20,2)
+        description: "Outstanding principal balance at period start"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: interest_accrued
+        data_type: numeric(20,2)
+        description: "Interest accrued during this period"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: interest_paid
+        data_type: numeric(20,2)
+        description: "Interest paid during this period"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: interest_outstanding
+        data_type: numeric(20,2)
+        description: "Outstanding interest at period end"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: compounding_frequency
+        data_type: varchar(32)
+        description: "Frequency of interest compounding"
+        tests:
+          - accepted_values:
+              values: ['Daily', 'Monthly', 'Quarterly', 'Semi-Annual', 'Annual', 'Simple']
+      - name: day_count_convention
+        data_type: varchar(32)
+        description: "Day count convention used for calculations"
+        tests:
+          - accepted_values:
+              values: ['30/360', 'Actual/360', 'Actual/365', 'Actual/Actual', '30E/360']
+      - name: rate_reset_date
+        data_type: date
+        description: "Date when interest rate was last reset"
+      - name: calculation_method
+        data_type: varchar(64)
+        description: "Method used for interest calculation"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - loan_id
+            - period_start_date
+            - period_end_date
+      # Custom test to validate interest rate calculation
+      - dbt_utils.expression_is_true:
+          expression: "interest_rate IS NULL OR base_rate IS NULL OR margin IS NULL OR ABS(interest_rate - (base_rate + margin)) < 0.01"
+          config:
+            severity: error
+      # Custom test to validate interest outstanding calculation
+      - dbt_utils.expression_is_true:
+          expression: "interest_accrued IS NULL OR interest_paid IS NULL OR interest_outstanding IS NULL OR ABS(interest_outstanding - (interest_accrued - interest_paid)) < 0.01"
+          config:
+            severity: error

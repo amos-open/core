@@ -2,13 +2,32 @@ version: 2
 
 models:
   - name: currency
-    description: "Currency dimension table"
+    description: |
+      **Currency Reference Data for BI Reporting**
+      
+      Master list of currencies used across all funds, investments, and transactions. 
+      Use this table to join with any amount fields to display currency names and enable currency-based filtering.
+      
+      **Common BI Use Cases:**
+      - Currency conversion and reporting
+      - Multi-currency fund analysis
+      - Geographic exposure by currency
+      - Risk analysis by currency exposure
+      
+      **Refresh Schedule:** Weekly or as needed
+      **Data Source:** ISO 4217 standard currency codes
     config:
       contract:
         enforced: true
     columns:
       - name: code
-        description: "ISO 3-letter currency code"
+        description: |
+          **Primary Key - ISO Currency Code**
+          
+          Standard 3-letter ISO 4217 currency code (e.g., 'USD', 'EUR', 'GBP').
+          Use this field to join with fund.base_currency_code, transaction.currency_code, etc.
+          
+          **BI Usage:** Primary filter and grouping field for currency analysis
         data_type: varchar(3)
         constraints:
           - type: not_null
@@ -17,23 +36,47 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Currency name"
+        description: |
+          **Display Name for Reports**
+          
+          Full currency name for display in reports and dashboards (e.g., 'US Dollar', 'Euro', 'British Pound').
+          
+          **BI Usage:** Use for report labels and user-friendly displays
         data_type: varchar(64)
       - name: created_at
-        description: "Record creation timestamp"
+        description: "System field - Record creation timestamp"
         data_type: timestamp
       - name: updated_at
-        description: "Record last update timestamp"
+        description: "System field - Record last update timestamp"
         data_type: timestamp
     
   - name: country
-    description: "Country dimension table"
+    description: |
+      **Geographic Reference Data for Regional Analysis**
+      
+      Master list of countries with geographic hierarchy for regional reporting and risk analysis.
+      Essential for geographic exposure analysis, compliance reporting, and regional performance comparisons.
+      
+      **Common BI Use Cases:**
+      - Geographic exposure analysis by country/region
+      - Regulatory reporting by jurisdiction
+      - Risk analysis by geographic concentration
+      - Regional performance benchmarking
+      
+      **Refresh Schedule:** Monthly or as needed
+      **Data Source:** ISO 3166-1 country codes with UN regional classifications
     config:
       contract:
         enforced: true
     columns:
       - name: code
-        description: "ISO 2-letter country code"
+        description: |
+          **Primary Key - ISO Country Code**
+          
+          Standard 2-letter ISO 3166-1 country code (e.g., 'US', 'GB', 'DE').
+          Use this field to join with counterparty.country_code, company_country.country_code, etc.
+          
+          **BI Usage:** Primary filter and grouping field for geographic analysis
         data_type: char(2)
         constraints:
           - type: not_null
@@ -42,23 +85,40 @@ models:
           - unique
           - not_null
       - name: name
-        description: "Country name"
+        description: |
+          **Display Name for Reports**
+          
+          Full country name for display in reports and dashboards (e.g., 'United States', 'United Kingdom', 'Germany').
+          
+          **BI Usage:** Use for report labels and geographic visualizations
         data_type: varchar(128)
         constraints:
           - type: not_null
         tests:
           - not_null
       - name: region
-        description: "Geographic region"
+        description: |
+          **Geographic Region Classification**
+          
+          High-level geographic region (e.g., 'North America', 'Europe', 'Asia-Pacific').
+          Based on UN regional classifications for consistent global reporting.
+          
+          **BI Usage:** Group countries for regional analysis and reporting
         data_type: varchar(64)
       - name: subregion
-        description: "Geographic subregion"
+        description: |
+          **Geographic Subregion Classification**
+          
+          More granular geographic classification (e.g., 'Northern America', 'Western Europe', 'Eastern Asia').
+          Provides additional detail for regional analysis.
+          
+          **BI Usage:** Detailed regional breakdowns and risk analysis
         data_type: varchar(64)
       - name: created_at
-        description: "Record creation timestamp"
+        description: "System field - Record creation timestamp"
         data_type: timestamp
       - name: updated_at
-        description: "Record last update timestamp"
+        description: "System field - Record last update timestamp"
         data_type: timestamp
     
   - name: industry

@@ -2,14 +2,39 @@ version: 2
 
 models:
   - name: fund
-    description: "Investment fund entity"
+    description: |
+      **Investment Fund Master Data**
+      
+      Core fund information including structure, fees, and performance targets. This is the primary table for fund-level analysis and reporting.
+      Join with fund_snapshot for performance metrics and commitment for investor relationships.
+      
+      **Common BI Use Cases:**
+      - Fund performance dashboards and comparisons
+      - Vintage year analysis and benchmarking
+      - Fee analysis and fund economics
+      - Fund structure and jurisdiction reporting
+      - LP reporting and investor communications
+      
+      **Key Relationships:**
+      - Join with fund_snapshot on fund.id = fund_snapshot.fund_id for performance metrics
+      - Join with commitment on fund.id = commitment.fund_id for investor relationships
+      - Join with investment on fund.id = investment.fund_id for portfolio companies
+      - Join with currency on fund.base_currency_code = currency.code for currency details
+      
+      **Refresh Schedule:** Daily at 6:00 AM UTC
+      **Data Availability:** Complete fund history from inception
     config:
       contract:
         enforced: true
     columns:
       - name: id
         data_type: uuid
-        description: "Unique fund identifier"
+        description: |
+          **Primary Key - Fund Identifier**
+          
+          Unique identifier for each fund. Use this field to join with all fund-related tables.
+          
+          **BI Usage:** Primary key for all fund-related joins and filters
         constraints:
           - type: not_null
           - type: primary_key
@@ -18,45 +43,112 @@ models:
           - not_null
       - name: name
         data_type: varchar(255)
-        description: "Fund name"
+        description: |
+          **Fund Display Name**
+          
+          Official fund name as it appears in legal documents and investor reports.
+          Use for fund selection filters and report headers.
+          
+          **BI Usage:** Primary display field for fund identification in reports and dashboards
         constraints:
           - type: not_null
         tests:
           - not_null
       - name: type
         data_type: varchar(64)
-        description: "Fund type"
+        description: |
+          **Fund Strategy Type**
+          
+          Investment strategy classification (e.g., 'Growth Equity', 'Buyout', 'Credit', 'Venture Capital').
+          Use for strategy-based analysis and peer comparisons.
+          
+          **BI Usage:** Group funds by strategy for performance benchmarking and analysis
+        data_type: varchar(64)
       - name: vintage
         data_type: integer
-        description: "Fund vintage year"
+        description: |
+          **Fund Vintage Year**
+          
+          Year the fund was established or began investing. Critical for vintage-based performance analysis.
+          Use for cohort analysis and market cycle comparisons.
+          
+          **BI Usage:** Primary grouping field for vintage analysis and peer benchmarking
+        data_type: integer
       - name: management_fee
         data_type: decimal(7,4)
-        description: "Management fee percentage"
+        description: |
+          **Annual Management Fee Rate**
+          
+          Annual management fee as a decimal (e.g., 0.0200 = 2.00%).
+          Used for fee analysis and fund economics calculations.
+          
+          **BI Usage:** Calculate total management fees and compare fee structures across funds
+          **Typical Range:** 1.5% - 2.5% for most fund types
+        data_type: decimal(7,4)
       - name: hurdle
         data_type: decimal(7,4)
-        description: "Hurdle rate percentage"
+        description: |
+          **Preferred Return Hurdle Rate**
+          
+          Minimum return rate before carried interest is earned, as a decimal (e.g., 0.0800 = 8.00%).
+          Critical for carried interest calculations and LP return analysis.
+          
+          **BI Usage:** Calculate carried interest eligibility and LP preferred returns
+          **Typical Range:** 6% - 10% annually
+        data_type: decimal(7,4)
       - name: carried_interest
         data_type: decimal(7,4)
-        description: "Carried interest percentage"
+        description: |
+          **Carried Interest Rate**
+          
+          GP's share of profits above the hurdle rate, as a decimal (e.g., 0.2000 = 20.00%).
+          Used for GP compensation analysis and net return calculations.
+          
+          **BI Usage:** Calculate GP carried interest and LP net returns
+          **Typical Range:** 15% - 25% of profits above hurdle
+        data_type: decimal(7,4)
       - name: target_commitment
         data_type: numeric(20,2)
-        description: "Target commitment amount"
+        description: |
+          **Target Fund Size**
+          
+          Target total commitment amount in the fund's base currency.
+          Compare with actual commitments to track fundraising progress.
+          
+          **BI Usage:** Calculate fundraising progress and fund size analysis
+          **Note:** Amount is in base_currency_code denomination
+        data_type: numeric(20,2)
       - name: incorporated_in
         data_type: varchar(128)
-        description: "Jurisdiction of incorporation"
+        description: |
+          **Jurisdiction of Incorporation**
+          
+          Legal jurisdiction where the fund is incorporated (e.g., 'Delaware', 'Cayman Islands', 'Luxembourg').
+          Important for regulatory reporting and tax analysis.
+          
+          **BI Usage:** Group funds by jurisdiction for regulatory and tax reporting
+        data_type: varchar(128)
       - name: base_currency_code
         data_type: varchar(3)
-        description: "Base currency code"
+        description: |
+          **Fund Base Currency**
+          
+          Primary currency for fund accounting and reporting (ISO 3-letter code).
+          All fund-level amounts are denominated in this currency unless otherwise specified.
+          
+          **BI Usage:** Currency conversion and multi-currency fund analysis
+          **Join:** currency.code for currency name and details
+        data_type: varchar(3)
         tests:
           - relationships:
               to: ref('currency')
               field: code
       - name: created_at
         data_type: text
-        description: "Record creation timestamp"
+        description: "System field - Record creation timestamp"
       - name: updated_at
         data_type: text
-        description: "Record last update timestamp"
+        description: "System field - Record last update timestamp"
     
   - name: company
     description: "Portfolio company entity"

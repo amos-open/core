@@ -1,5 +1,6 @@
 -- Test to ensure equity-specific fields are only populated for equity instruments
 -- and loan-specific fields are only populated for loan instruments
+-- This validates the unified instrument snapshot approach
 
 WITH instrument_snapshot_with_type AS (
   SELECT 
@@ -28,6 +29,7 @@ equity_field_violations AS (
 
 loan_field_violations AS (
   -- Check that loan fields are not populated for non-loan instruments
+  -- Note: Basic loan fields are allowed in unified instrument snapshots for all types
   SELECT 
     id,
     instrument_id,
@@ -45,8 +47,23 @@ loan_field_violations AS (
       OR accrued_income_converted IS NOT NULL 
       OR accrued_fees_converted IS NOT NULL
     )
+),
+
+equity_company_consistency AS (
+  -- Check that equity instruments have company_id populated in the instrument table
+  SELECT 
+    s.id,
+    s.instrument_id,
+    i.instrument_type,
+    'equity_missing_company' as violation_type
+  FROM instrument_snapshot_with_type s
+  LEFT JOIN {{ ref('instrument') }} i ON s.instrument_id = i.id
+  WHERE i.instrument_type IN ('EQUITY', 'CONVERTIBLE', 'WARRANT')
+    AND i.company_id IS NULL
 )
 
 SELECT * FROM equity_field_violations
 UNION ALL
 SELECT * FROM loan_field_violations
+UNION ALL
+SELECT * FROM equity_company_consistency

@@ -33,7 +33,7 @@ vars:
     # Freshness thresholds (in hours)
     freshness_thresholds:
       fund_snapshot: 25
-      investment_snapshot: 25
+      instrument_snapshot: 25
       loan_snapshot: 25
       transaction: 6
       loan_cashflow: 6
@@ -115,7 +115,7 @@ models:
             severity: error
             tags: ["critical", "business_rule"]
     
-  investment_snapshot:
+  instrument_snapshot:
     tests:
       - dbt_utils.expression_is_true:
           expression: "nav >= 0 OR nav IS NULL"

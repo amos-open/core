@@ -52,22 +52,22 @@ WITH volume_analysis AS (
     
     UNION ALL
     
-    -- Investment snapshot record count analysis
+    -- Instrument snapshot record count analysis
     SELECT 
-        'investment_snapshot_volume' as anomaly_type,
+        'instrument_snapshot_volume' as anomaly_type,
         as_of_date as analysis_date,
         COUNT(*) as daily_count,
-        COUNT(DISTINCT investment_id) as daily_volume,
+        COUNT(DISTINCT instrument_id) as daily_volume,
         AVG(COUNT(*)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) as avg_count_7day,
-        AVG(COUNT(DISTINCT investment_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) as avg_volume_7day,
+        AVG(COUNT(DISTINCT instrument_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) as avg_volume_7day,
         CASE 
             WHEN COUNT(*) < 0.5 * AVG(COUNT(*)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) AND AVG(COUNT(*)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) > 10
-                THEN 'Investment snapshot count drop: ' || COUNT(*) || ' vs 7-day avg ' || ROUND(AVG(COUNT(*)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
-            WHEN COUNT(DISTINCT investment_id) < 0.7 * AVG(COUNT(DISTINCT investment_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) AND AVG(COUNT(DISTINCT investment_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) > 5
-                THEN 'Investment coverage drop: ' || COUNT(DISTINCT investment_id) || ' investments vs 7-day avg ' || ROUND(AVG(COUNT(DISTINCT investment_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
+                THEN 'Instrument snapshot count drop: ' || COUNT(*) || ' vs 7-day avg ' || ROUND(AVG(COUNT(*)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
+            WHEN COUNT(DISTINCT instrument_id) < 0.7 * AVG(COUNT(DISTINCT instrument_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) AND AVG(COUNT(DISTINCT instrument_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING) > 5
+                THEN 'Instrument coverage drop: ' || COUNT(DISTINCT instrument_id) || ' instruments vs 7-day avg ' || ROUND(AVG(COUNT(DISTINCT instrument_id)) OVER (ORDER BY as_of_date ROWS BETWEEN 6 PRECEDING AND 1 PRECEDING), 0)
             ELSE NULL
         END as anomaly_description
-    FROM {{ ref('investment_snapshot') }}
+    FROM {{ ref('instrument_snapshot') }}
     WHERE as_of_date >= CURRENT_DATE() - INTERVAL '30 days'
     GROUP BY as_of_date
     

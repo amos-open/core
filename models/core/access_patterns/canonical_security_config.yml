@@ -13,8 +13,8 @@ security_policies:
         - fund
         - fund_snapshot
         - commitment
-        - investment
-        - investment_snapshot
+        - instrument
+        - instrument_snapshot
         - facility
         - loan
         - loan_snapshot
@@ -35,7 +35,7 @@ security_policies:
     investment_access_policy:
       description: "Access to investment data based on fund permissions"
       applies_to:
-        - investment_snapshot
+        - instrument_snapshot
         - share_class
         - shareholder
         - investment_round
@@ -76,8 +76,8 @@ security_policies:
       applies_to:
         - table: fund_snapshot
           columns: [total_nav, total_commitment, total_called, total_distributed]
-        - table: investment_snapshot
-          columns: [nav, cost_basis, unrealized_gain_loss]
+        - table: instrument_snapshot
+          columns: [fair_value, amortized_cost, equity_stake_pct, principal_outstanding]
         - table: loan_snapshot
           columns: [outstanding_principal, total_exposure, provision_amount]
         - table: transaction

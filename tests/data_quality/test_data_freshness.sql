@@ -26,19 +26,19 @@ WITH freshness_check AS (
     UNION ALL
     
     SELECT 
-        'investment_snapshot' as table_name,
+        'instrument_snapshot' as table_name,
         MAX(as_of_date) as latest_date,
         MAX(updated_at) as latest_update,
         COUNT(*) as total_records,
-        COUNT(DISTINCT investment_id) as unique_entities,
+        COUNT(DISTINCT instrument_id) as unique_entities,
         CURRENT_DATE() - MAX(as_of_date) as days_since_latest_snapshot,
         CURRENT_TIMESTAMP() - MAX(updated_at) as hours_since_latest_update,
         CASE 
-            WHEN CURRENT_DATE() - MAX(as_of_date) > 2 THEN 'Investment snapshots are stale (>2 days old)'
-            WHEN CURRENT_TIMESTAMP() - MAX(updated_at) > INTERVAL '25 hours' THEN 'Investment snapshots not updated in last 25 hours'
+            WHEN CURRENT_DATE() - MAX(as_of_date) > 2 THEN 'Instrument snapshots are stale (>2 days old)'
+            WHEN CURRENT_TIMESTAMP() - MAX(updated_at) > INTERVAL '25 hours' THEN 'Instrument snapshots not updated in last 25 hours'
             ELSE NULL
         END as freshness_issue
-    FROM {{ ref('investment_snapshot') }}
+    FROM {{ ref('instrument_snapshot') }}
     
 
     

@@ -127,12 +127,12 @@
       
       SELECT 
         CURRENT_DATE() as check_date,
-        'investment_snapshot' as table_name,
+        'instrument_snapshot' as table_name,
         COUNT(*) as record_count,
-        COUNT(CASE WHEN nav IS NULL THEN 1 END) as null_nav_count,
-        COUNT(CASE WHEN nav < 0 THEN 1 END) as negative_nav_count,
-        COUNT(CASE WHEN ownership_percentage > 100 THEN 1 END) as invalid_ownership_count
-      FROM {{ ref('investment_snapshot') }}
+        COUNT(CASE WHEN fair_value IS NULL THEN 1 END) as null_fair_value_count,
+        COUNT(CASE WHEN fair_value < 0 THEN 1 END) as negative_fair_value_count,
+        COUNT(CASE WHEN equity_stake_pct > 100 THEN 1 END) as invalid_equity_stake_count
+      FROM {{ ref('instrument_snapshot') }}
       WHERE as_of_date >= CURRENT_DATE() - INTERVAL '7 days'
       
       UNION ALL

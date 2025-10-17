@@ -98,88 +98,165 @@ models:
   - name: commitment_snapshot
     description: "Point-in-time commitment snapshots"
     
-  - name: investment_snapshot
-    description: "Point-in-time investment valuations with NAV calculations and ownership tracking. Updated daily with investment performance metrics."
+  - name: instrument_snapshot
+    description: "Unified point-in-time snapshots for all instrument types (equity and loan) with comprehensive valuation and performance tracking. Updated daily with instrument-specific metrics."
     config:
       contract:
         enforced: true
     columns:
-      - name: investment_id
-        data_type: uuid
-        description: "Foreign key to investment table"
+      - name: id
+        data_type: varchar(36)
+        description: "Unique snapshot record identifier (UUID)"
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: instrument_id
+        data_type: varchar(36)
+        description: "Foreign key to instrument table"
         constraints:
           - type: not_null
         tests:
           - not_null
           - relationships:
-              to: ref('investment')
-              field: id
-      - name: fund_id
-        data_type: uuid
-        description: "Foreign key to fund table"
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fund')
-              field: id
-      - name: company_id
-        data_type: uuid
-        description: "Foreign key to company table"
-        constraints:
-          - type: not_null
-        tests:
-          - not_null
-          - relationships:
-              to: ref('company')
+              to: ref('instrument')
               field: id
       - name: as_of_date
         data_type: date
-        description: "Snapshot date for the investment valuation"
+        description: "Snapshot date for the instrument valuation"
         constraints:
           - type: not_null
         tests:
           - not_null
-      - name: nav
+      - name: currency_code
+        data_type: varchar(3)
+        description: "Currency code for the snapshot values"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+      - name: fx_rate
+        data_type: decimal(10,6)
+        description: "Foreign exchange rate to base currency"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: fair_value
         data_type: numeric(20,2)
-        description: "Net Asset Value of the investment"
+        description: "Fair value of the instrument in original currency"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
-      - name: cost_basis
+      - name: amortized_cost
         data_type: numeric(20,2)
-        description: "Original cost basis of the investment"
+        description: "Amortized cost of the instrument in original currency"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
-      - name: unrealized_gain_loss
+      - name: fair_value_converted
         data_type: numeric(20,2)
-        description: "Unrealized gain or loss (NAV - cost_basis)"
-      - name: ownership_percentage
+        description: "Fair value converted to base currency"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: amortized_cost_converted
+        data_type: numeric(20,2)
+        description: "Amortized cost converted to base currency"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: principal_outstanding
+        data_type: numeric(20,2)
+        description: "Outstanding principal amount (loan instruments only)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: undrawn_commitment
+        data_type: numeric(20,2)
+        description: "Undrawn commitment amount (loan instruments only)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: accrued_income
+        data_type: numeric(20,2)
+        description: "Accrued income amount (loan instruments only)"
+      - name: accrued_fees
+        data_type: numeric(20,2)
+        description: "Accrued fees amount (loan instruments only)"
+      - name: principal_outstanding_converted
+        data_type: numeric(20,2)
+        description: "Outstanding principal converted to base currency"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: undrawn_commitment_converted
+        data_type: numeric(20,2)
+        description: "Undrawn commitment converted to base currency"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: accrued_income_converted
+        data_type: numeric(20,2)
+        description: "Accrued income converted to base currency"
+      - name: accrued_fees_converted
+        data_type: numeric(20,2)
+        description: "Accrued fees converted to base currency"
+      - name: equity_stake_pct
         data_type: decimal(5,2)
-        description: "Ownership percentage in the company"
+        description: "Equity ownership percentage (equity instruments only)"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 100
               inclusive: true
-      - name: shares_outstanding
-        data_type: numeric(20,0)
-        description: "Number of shares outstanding"
+      - name: equity_dividends_cum
+        data_type: numeric(20,2)
+        description: "Cumulative dividends received (equity instruments only)"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
-      - name: share_price
-        data_type: numeric(20,4)
-        description: "Price per share"
+      - name: equity_exit_proceeds_actual
+        data_type: numeric(20,2)
+        description: "Actual exit proceeds (equity instruments only)"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
+      - name: equity_exit_proceeds_forecast
+        data_type: numeric(20,2)
+        description: "Forecasted exit proceeds (equity instruments only)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: source
+        data_type: varchar(20)
+        description: "Source of the snapshot data"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ADMIN', 'INTERNAL']
+              quote: true
+      - name: source_file_ref
+        data_type: varchar(255)
+        description: "Reference to source file or system"
       - name: created_at
         data_type: timestamp
         description: "Record creation timestamp"
@@ -192,7 +269,7 @@ models:
           - type: not_null
     tests:
       - unique:
-          column_name: "investment_id || '|' || as_of_date"
+          column_name: "instrument_id || '|' || as_of_date || '|' || source"
       - dbt_utils.expression_is_true:
           expression: "as_of_date <= CURRENT_DATE()"
           config:

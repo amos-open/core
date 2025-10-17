@@ -93,7 +93,7 @@
   -- Apply financial amount masking to sensitive financial columns
   {% set financial_columns = [
     {'table': 'fund_snapshot', 'columns': ['total_nav', 'total_commitment', 'total_called', 'total_distributed']},
-    {'table': 'investment_snapshot', 'columns': ['nav', 'cost_basis', 'unrealized_gain_loss']},
+    {'table': 'instrument_snapshot', 'columns': ['fair_value', 'amortized_cost', 'equity_stake_pct', 'principal_outstanding']},
     {'table': 'loan_snapshot', 'columns': ['outstanding_principal', 'total_exposure', 'provision_amount']},
     {'table': 'transaction', 'columns': ['amount']},
     {'table': 'loan_cashflow', 'columns': ['principal_amount', 'interest_amount', 'total_amount']}
@@ -196,7 +196,7 @@
     {% set canonical_tables = [
       'fund', 'company', 'investor', 'counterparty',
       'commitment', 'investment', 'facility', 'loan', 'opportunity',
-      'fund_snapshot', 'investment_snapshot', 'loan_snapshot',
+      'fund_snapshot', 'instrument_snapshot', 'loan_snapshot',
       'transaction', 'loan_cashflow',
       'currency', 'country', 'industry', 'investor_type', 'stage'
     ] %}

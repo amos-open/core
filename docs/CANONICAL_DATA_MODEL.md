@@ -91,7 +91,7 @@ The AMOS canonical data layer provides clean, validated, and business-ready enti
 
 #### Performance Snapshots
 - **fund_snapshot**: Daily fund performance metrics
-- **investment_snapshot**: Daily investment valuations
+- **instrument_snapshot**: Daily instrument valuations (unified equity and loan snapshots)
 - **loan_snapshot**: Daily loan positions and risk metrics
 
 #### Transaction Records

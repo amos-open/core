@@ -83,8 +83,8 @@ LEFT JOIN {{ ref('country') }} pc ON cc.country_code = pc.code
 -- Get latest investment snapshot
 LEFT JOIN LATERAL (
     SELECT *
-    FROM {{ ref('investment_snapshot') }} is_sub
-    WHERE is_sub.investment_id = inv.id
+    FROM {{ ref('instrument_snapshot') }} is_sub
+    WHERE is_sub.instrument_id = inv.id
     ORDER BY is_sub.as_of_date DESC
     LIMIT 1
 ) is_latest ON TRUE
@@ -213,9 +213,9 @@ LEFT JOIN {{ ref('company_industry') }} ci ON comp.id = ci.company_id
 LEFT JOIN {{ ref('industry') }} i ON ci.industry_id = i.id
 -- Latest investment snapshot
 LEFT JOIN LATERAL (
-    SELECT nav, cost_basis
-    FROM {{ ref('investment_snapshot') }} is_sub
-    WHERE is_sub.investment_id = inv.id
+    SELECT fair_value, amortized_cost
+    FROM {{ ref('instrument_snapshot') }} is_sub
+    WHERE is_sub.instrument_id = inv.id
     ORDER BY is_sub.as_of_date DESC
     LIMIT 1
 ) is_latest ON TRUE

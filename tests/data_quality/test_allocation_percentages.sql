@@ -48,6 +48,47 @@ WITH allocation_issues AS (
     JOIN {{ ref('company') }} c ON cc.company_id = c.id
     GROUP BY company_id, c.name
     
+    UNION ALL
+    
+    -- Instrument Country Allocations (temporal)
+    SELECT 
+        'instrument_country' as table_name,
+        instrument_id::text as entity_id,
+        i.description as entity_name,
+        ic.valid_from,
+        SUM(allocation_pct) as total_allocation_pct,
+        COUNT(*) as allocation_count,
+        COUNT(CASE WHEN primary_flag = true THEN 1 END) as primary_count,
+        CASE 
+            WHEN ABS(SUM(allocation_pct) - 100.0) > 0.01 THEN 'Allocation percentages do not sum to 100%'
+            WHEN COUNT(CASE WHEN primary_flag = true THEN 1 END) != 1 THEN 'Must have exactly one primary flag'
+            WHEN MIN(allocation_pct) < 0 OR MAX(allocation_pct) > 100 THEN 'Allocation percentage out of range'
+            ELSE NULL
+        END as issue_description
+    FROM {{ ref('instrument_country') }} ic
+    JOIN {{ ref('instrument') }} i ON ic.instrument_id = i.id
+    GROUP BY instrument_id, i.description, ic.valid_from
+    
+    UNION ALL
+    
+    -- Instrument Industry Allocations (temporal)
+    SELECT 
+        'instrument_industry' as table_name,
+        instrument_id::text as entity_id,
+        i.description as entity_name,
+        ii.valid_from,
+        SUM(allocation_pct) as total_allocation_pct,
+        COUNT(*) as allocation_count,
+        COUNT(CASE WHEN primary_flag = true THEN 1 END) as primary_count,
+        CASE 
+            WHEN ABS(SUM(allocation_pct) - 100.0) > 0.01 THEN 'Allocation percentages do not sum to 100%'
+            WHEN COUNT(CASE WHEN primary_flag = true THEN 1 END) != 1 THEN 'Must have exactly one primary flag'
+            WHEN MIN(allocation_pct) < 0 OR MAX(allocation_pct) > 100 THEN 'Allocation percentage out of range'
+            ELSE NULL
+        END as issue_description
+    FROM {{ ref('instrument_industry') }} ii
+    JOIN {{ ref('instrument') }} i ON ii.instrument_id = i.id
+    GROUP BY instrument_id, i.description, ii.valid_from
 
 )
 

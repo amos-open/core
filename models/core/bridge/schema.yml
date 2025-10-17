@@ -112,6 +112,145 @@ models:
             - country_code
     
 
+  - name: instrument_country
+    description: "Many-to-many relationship between instruments and countries with temporal allocations"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: instrument_id
+        data_type: varchar(36)
+        description: "Foreign key to instrument table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('instrument')
+              field: id
+      - name: country_code
+        data_type: char(2)
+        description: "Foreign key to country table (ISO 2-letter code)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('country')
+              field: code
+      - name: valid_from
+        data_type: date
+        description: "Start date for this allocation"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: valid_to
+        data_type: date
+        description: "End date for this allocation (null for current)"
+      - name: allocation_pct
+        data_type: decimal(5,2)
+        description: "Percentage allocation to this country (0-100)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: role
+        data_type: varchar(50)
+        description: "Role of the country (e.g., 'DOMICILE', 'OPERATIONS', 'INVESTMENT')"
+        tests:
+          - accepted_values:
+              values: ['DOMICILE', 'OPERATIONS', 'INVESTMENT', 'REGULATORY']
+              quote: true
+      - name: primary_flag
+        data_type: boolean
+        description: "Flag indicating if this is the primary country for the instrument"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - instrument_id
+            - country_code
+            - valid_from
+
+  - name: instrument_industry
+    description: "Many-to-many relationship between instruments and industries with temporal allocations"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: instrument_id
+        data_type: varchar(36)
+        description: "Foreign key to instrument table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('instrument')
+              field: id
+      - name: industry_id
+        data_type: uuid
+        description: "Foreign key to industry table"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('industry')
+              field: id
+      - name: allocation_pct
+        data_type: decimal(5,2)
+        description: "Percentage allocation to this industry (0-100)"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: primary_flag
+        data_type: boolean
+        description: "Flag indicating if this is the primary industry for the instrument"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: valid_from
+        data_type: date
+        description: "Start date for this allocation"
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+      - name: valid_to
+        data_type: date
+        description: "End date for this allocation (null for current)"
+      - name: created_at
+        data_type: timestamp
+        description: "Record creation timestamp"
+      - name: updated_at
+        data_type: timestamp
+        description: "Record last update timestamp"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - instrument_id
+            - industry_id
+            - valid_from
+
   - name: opportunity_country
     description: "Many-to-many relationship between opportunities and countries"
     

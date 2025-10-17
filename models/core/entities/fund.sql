@@ -7,7 +7,7 @@
 }}
 
 WITH staging_fund AS (
-  SELECT * FROM {{ ref('stg_fund') }}
+  SELECT * FROM {{ ref(var('source_package'), 'int_entities_fund') }}
 ),
 
 validated_fund AS (

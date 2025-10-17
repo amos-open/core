@@ -7,7 +7,7 @@
 }}
 
 WITH staging_investor AS (
-  SELECT * FROM {{ ref('stg_investor') }}
+  SELECT * FROM {{ ref(var('source_package'), 'int_entities_investor') }}
 ),
 
 validated_investor AS (

@@ -7,7 +7,7 @@
 }}
 
 WITH staging_commitment AS (
-  SELECT * FROM {{ ref('stg_commitment') }}
+  SELECT * FROM {{ ref(var('source_package'), 'int_relationships_fund_investor') }}
 ),
 
 validated_commitment AS (

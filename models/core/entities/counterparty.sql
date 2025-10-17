@@ -7,7 +7,7 @@
 }}
 
 WITH staging_counterparty AS (
-  SELECT * FROM {{ ref('stg_counterparty') }}
+  SELECT * FROM {{ ref(var('source_package'), 'int_entities_counterparty') }}
 ),
 
 validated_counterparty AS (

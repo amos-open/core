@@ -6,6 +6,7 @@ profile: 'default'  # change to your profile name
 
 vars:
   active_source: "{{ var('active_source', 'example') }}"
+  source_package: "{{ var('source_package', 'amos_source_example') }}"
 
 model-paths: ["models"]
 macro-paths: ["macros"]

@@ -7,7 +7,7 @@
 }}
 
 WITH staging_instrument AS (
-  SELECT * FROM {{ ref('stg_instruments') }}
+  SELECT * FROM {{ ref(var('source_package'), 'int_relationships_fund_investment') }}
 ),
 
 validated_instrument AS (

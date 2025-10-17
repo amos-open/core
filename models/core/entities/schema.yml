@@ -63,7 +63,6 @@ models:
           Use for strategy-based analysis and peer comparisons.
           
           **BI Usage:** Group funds by strategy for performance benchmarking and analysis
-        data_type: varchar(64)
       - name: vintage
         data_type: integer
         description: |
@@ -73,7 +72,6 @@ models:
           Use for cohort analysis and market cycle comparisons.
           
           **BI Usage:** Primary grouping field for vintage analysis and peer benchmarking
-        data_type: integer
       - name: management_fee
         data_type: decimal(7,4)
         description: |
@@ -84,7 +82,6 @@ models:
           
           **BI Usage:** Calculate total management fees and compare fee structures across funds
           **Typical Range:** 1.5% - 2.5% for most fund types
-        data_type: decimal(7,4)
       - name: hurdle
         data_type: decimal(7,4)
         description: |
@@ -95,7 +92,6 @@ models:
           
           **BI Usage:** Calculate carried interest eligibility and LP preferred returns
           **Typical Range:** 6% - 10% annually
-        data_type: decimal(7,4)
       - name: carried_interest
         data_type: decimal(7,4)
         description: |
@@ -106,7 +102,6 @@ models:
           
           **BI Usage:** Calculate GP carried interest and LP net returns
           **Typical Range:** 15% - 25% of profits above hurdle
-        data_type: decimal(7,4)
       - name: target_commitment
         data_type: numeric(20,2)
         description: |
@@ -117,7 +112,6 @@ models:
           
           **BI Usage:** Calculate fundraising progress and fund size analysis
           **Note:** Amount is in base_currency_code denomination
-        data_type: numeric(20,2)
       - name: incorporated_in
         data_type: varchar(128)
         description: |
@@ -127,7 +121,6 @@ models:
           Important for regulatory reporting and tax analysis.
           
           **BI Usage:** Group funds by jurisdiction for regulatory and tax reporting
-        data_type: varchar(128)
       - name: base_currency_code
         data_type: varchar(3)
         description: |
@@ -138,7 +131,6 @@ models:
           
           **BI Usage:** Currency conversion and multi-currency fund analysis
           **Join:** currency.code for currency name and details
-        data_type: varchar(3)
         tests:
           - relationships:
               to: ref('currency')
@@ -151,7 +143,40 @@ models:
         description: "System field - Record last update timestamp"
     
   - name: company
-    description: "Portfolio company entity"
+    description: |
+      **Portfolio Company Master Data**
+      
+      Master data for portfolio companies linked to equity instruments in the unified instrument model.
+      Essential for equity analysis and company-specific reporting through the instrument-centric design.
+      
+      **Instrument-Centric Integration:**
+      - Linked to instruments via instrument.company_id for equity-type instruments
+      - Required relationship for EQUITY, CONVERTIBLE, and WARRANT instruments
+      - Not used for LOAN or FUND_INTEREST instruments
+      
+      **Common BI Use Cases:**
+      - Company-level equity analysis and performance tracking
+      - Industry and geographic analysis through company attributes
+      - Portfolio company reporting and due diligence
+      - Company valuation and performance metrics
+      
+      **Key Relationships:**
+      - Join with instrument WHERE instrument_type IN ('EQUITY', 'CONVERTIBLE', 'WARRANT')
+      - Join with industry for sector analysis
+      - Join with company_industry/company_country bridges for allocations
+      
+      **Query Patterns:**
+      ```sql
+      -- Equity instruments by company
+      SELECT c.name, COUNT(i.id) as instrument_count, SUM(s.fair_value_converted) as total_value
+      FROM {{ ref('company') }} c
+      JOIN {{ ref('instrument') }} i ON c.id = i.company_id
+      JOIN {{ ref('instrument_snapshot') }} s ON i.id = s.instrument_id
+      WHERE i.instrument_type = 'EQUITY'
+      GROUP BY c.name
+      ```
+      
+      **Refresh Schedule:** Daily at 6:00 AM UTC
     config:
       contract:
         enforced: true

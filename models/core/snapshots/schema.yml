@@ -99,7 +99,55 @@ models:
     description: "Point-in-time commitment snapshots"
     
   - name: instrument_snapshot
-    description: "Unified point-in-time snapshots for all instrument types (equity and loan) with comprehensive valuation and performance tracking. Updated daily with instrument-specific metrics."
+    description: |
+      **Unified Instrument Snapshots - Point-in-Time Valuations**
+      
+      Comprehensive point-in-time snapshots for all instrument types with unified valuation and performance tracking.
+      Handles both equity and loan instruments through a single interface with instrument-specific fields.
+      
+      **Instrument-Centric Design:**
+      - Single table for all instrument type snapshots (equity, loan, convertible, etc.)
+      - Common valuation fields (fair_value, amortized_cost) for all instruments
+      - Equity-specific fields (equity_stake_pct, dividends, exit proceeds) for equity instruments
+      - Basic loan fields (principal_outstanding, accrued_income) for loan instruments
+      - Currency conversion support for multi-currency portfolios
+      
+      **Field Population by Instrument Type:**
+      - **EQUITY instruments:** fair_value, equity_stake_pct, equity_dividends_cum, equity_exit_proceeds_*
+      - **LOAN instruments:** fair_value, amortized_cost, principal_outstanding, accrued_income, accrued_fees
+      - **All instruments:** fair_value, currency fields, source tracking
+      
+      **Common BI Use Cases:**
+      - Portfolio valuation across all instrument types
+      - Performance tracking over time by instrument type
+      - Currency exposure analysis and conversion
+      - Equity-specific analysis (stake percentages, dividends, exits)
+      - Basic loan analysis (outstanding balances, accrued amounts)
+      
+      **Key Relationships:**
+      - Join with instrument to get instrument type and details
+      - Join with currency for currency conversion and display
+      - Time-series analysis using as_of_date for trend analysis
+      
+      **Query Patterns:**
+      ```sql
+      -- Latest portfolio valuation by instrument type
+      SELECT i.instrument_type, SUM(s.fair_value_converted) as total_value
+      FROM {{ ref('instrument_snapshot') }} s
+      JOIN {{ ref('instrument') }} i ON s.instrument_id = i.id
+      WHERE s.as_of_date = (SELECT MAX(as_of_date) FROM {{ ref('instrument_snapshot') }})
+      GROUP BY i.instrument_type
+      
+      -- Equity performance tracking
+      SELECT s.as_of_date, s.equity_stake_pct, s.fair_value_converted
+      FROM {{ ref('instrument_snapshot') }} s
+      JOIN {{ ref('instrument') }} i ON s.instrument_id = i.id
+      WHERE i.instrument_type = 'EQUITY' AND i.id = 'specific_instrument_id'
+      ORDER BY s.as_of_date
+      ```
+      
+      **Refresh Schedule:** Daily at 7:00 AM UTC (after instrument updates)
+      **Data Availability:** Complete snapshot history with daily granularity
     config:
       contract:
         enforced: true
@@ -118,6 +166,8 @@ models:
         description: "Foreign key to instrument table"
         constraints:
           - type: not_null
+          - type: foreign_key
+            expression: "instrument_id IN (SELECT id FROM {{ ref('instrument') }})"
         tests:
           - not_null
           - relationships:
@@ -135,6 +185,8 @@ models:
         description: "Currency code for the snapshot values"
         constraints:
           - type: not_null
+          - type: foreign_key
+            expression: "currency_code IN (SELECT code FROM {{ ref('currency') }})"
         tests:
           - not_null
           - relationships:

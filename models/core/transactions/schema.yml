@@ -2,7 +2,52 @@ version: 2
 
 models:
   - name: transaction
-    description: "All financial transactions across funds, instruments, and commitments"
+    description: |
+      **Unified Transaction Model - All Financial Transactions**
+      
+      Comprehensive transaction model capturing all financial movements across funds, instruments, and commitments.
+      Supports both equity and loan transactions through a unified interface with instrument-centric design.
+      
+      **Instrument-Centric Design:**
+      - Links to unified instrument table for both equity and loan transactions
+      - Transaction types cover equity (investments, dividends, exits) and loan (draws, repayments, interest)
+      - Flexible reference structure supports fund-level, instrument-level, and commitment-level transactions
+      - Facility_id reference prepared for future PC package integration
+      
+      **Transaction Type Coverage:**
+      - **Fund-level:** DRAWDOWN, DISTRIBUTION, MANAGEMENT_FEE, EXPENSE
+      - **Equity instruments:** INVESTMENT_TRANSACTION, DIVIDEND
+      - **Loan instruments:** LOAN_RECEIVED, LOAN_DRAW, LOAN_PRINCIPAL_REPAYMENT, LOAN_INTEREST_RECEIPT, LOAN_FEE_RECEIPT
+      
+      **Common BI Use Cases:**
+      - Cashflow analysis across all transaction types
+      - Fund-level transaction reporting and reconciliation
+      - Instrument-specific transaction tracking
+      - Performance calculation inputs (contributions, distributions, income)
+      - Audit trail and transaction lineage
+      
+      **Key Relationships:**
+      - Join with fund for fund-level transaction analysis
+      - Join with instrument for instrument-specific transactions
+      - Join with commitment for investor-related transactions
+      - Join with counterparty for external party transactions
+      
+      **Query Patterns:**
+      ```sql
+      -- Equity instrument transactions
+      SELECT t.*, i.instrument_type
+      FROM {{ ref('transaction') }} t
+      JOIN {{ ref('instrument') }} i ON t.instrument_id = i.id
+      WHERE i.instrument_type = 'EQUITY'
+      
+      -- Fund cashflows by type
+      SELECT transaction_type, SUM(amount) as total_amount
+      FROM {{ ref('transaction') }}
+      WHERE fund_id = 'specific_fund_id'
+      GROUP BY transaction_type
+      ```
+      
+      **Refresh Schedule:** Real-time with transaction processing
     config:
       contract:
         enforced: true
@@ -22,6 +67,8 @@ models:
         data_type: varchar(36)
         constraints:
           - type: not_null
+          - type: foreign_key
+            expression: "fund_id IN (SELECT id FROM {{ ref('fund') }})"
         tests:
           - not_null
           - relationships:
@@ -31,6 +78,9 @@ models:
       - name: instrument_id
         description: "Optional foreign key reference to the instrument table"
         data_type: varchar(36)
+        constraints:
+          - type: foreign_key
+            expression: "instrument_id IS NULL OR instrument_id IN (SELECT id FROM {{ ref('instrument') }})"
         tests:
           - relationships:
               to: ref('instrument')
@@ -124,7 +174,52 @@ models:
         tests:
           - not_null
   - name: instrument_cashflow
-    description: "Unified cashflows for all instrument types (equity and loan instruments)"
+    description: |
+      **Unified Instrument Cashflows - Instrument-Level Financial Flows**
+      
+      Instrument-specific cashflow tracking for all instrument types with unified interface.
+      Provides detailed cashflow analysis at the instrument level for both equity and loan instruments.
+      
+      **Instrument-Centric Design:**
+      - Single table for all instrument type cashflows
+      - Links to unified instrument table for instrument context
+      - Optional transaction linkage for audit trail
+      - Cashflow types cover equity and loan-specific flows
+      
+      **Cashflow Type Coverage:**
+      - **Equity instruments:** CONTRIBUTION, DISTRIBUTION, DIVIDEND
+      - **Loan instruments:** DRAW, PRINCIPAL, INTEREST, FEE, PREPAYMENT
+      - **All instruments:** OTHER (for miscellaneous flows)
+      
+      **Common BI Use Cases:**
+      - Instrument-level cashflow analysis and performance calculation
+      - IRR and multiple calculation inputs
+      - Cashflow timing analysis by instrument type
+      - Performance attribution at instrument level
+      
+      **Key Relationships:**
+      - Join with instrument to get instrument type and details
+      - Join with transaction for transaction-level detail (when available)
+      - Join with currency for multi-currency analysis
+      
+      **Query Patterns:**
+      ```sql
+      -- Equity instrument cashflows
+      SELECT ic.*, i.instrument_type
+      FROM {{ ref('instrument_cashflow') }} ic
+      JOIN {{ ref('instrument') }} i ON ic.instrument_id = i.id
+      WHERE i.instrument_type = 'EQUITY'
+      
+      -- Loan interest and principal flows
+      SELECT cashflow_type, SUM(amount) as total_amount
+      FROM {{ ref('instrument_cashflow') }} ic
+      JOIN {{ ref('instrument') }} i ON ic.instrument_id = i.id
+      WHERE i.instrument_type = 'LOAN' 
+        AND ic.cashflow_type IN ('INTEREST', 'PRINCIPAL')
+      GROUP BY cashflow_type
+      ```
+      
+      **Refresh Schedule:** Daily with transaction processing
     config:
       contract:
         enforced: true

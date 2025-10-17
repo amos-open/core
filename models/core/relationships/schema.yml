@@ -44,7 +44,51 @@ models:
         description: "Record last update timestamp"
     
   - name: instrument
-    description: "Unified instrument model for all financial positions (equity and loan instruments)"
+    description: |
+      **Unified Instrument Model - Core Financial Positions**
+      
+      Central table for all financial positions including equity investments, loans, convertibles, warrants, and fund interests.
+      This unified approach abstracts both private equity and private credit instruments into a single interface while maintaining 
+      product-specific attributes through related tables and snapshots.
+      
+      **Instrument-Centric Design:**
+      - All financial positions flow through this unified instrument table
+      - Use instrument_type to filter for specific analysis (equity vs loan)
+      - Equity-specific data accessed through company relationships and equity fields in snapshots
+      - Loan-specific data accessed through basic loan fields (detailed loan data in separate PC package)
+      
+      **Common BI Use Cases:**
+      - Portfolio overview across all instrument types
+      - Equity analysis: Filter by instrument_type = 'EQUITY' and join with company data
+      - Loan analysis: Filter by instrument_type = 'LOAN' for basic loan reporting
+      - Performance tracking: Join with instrument_snapshot for time-series analysis
+      - Geographic/industry exposure: Join with instrument_country/instrument_industry bridges
+      
+      **Key Relationships:**
+      - Join with fund on instrument.fund_id = fund.id for fund-level analysis
+      - Join with company on instrument.company_id = company.id for equity instruments
+      - Join with instrument_snapshot for valuation and performance metrics
+      - Join with instrument_cashflow for cashflow analysis
+      - Join with instrument_country/instrument_industry for allocation analysis
+      
+      **Query Patterns:**
+      ```sql
+      -- Equity portfolio analysis
+      SELECT i.*, c.name as company_name, f.name as fund_name
+      FROM {{ ref('instrument') }} i
+      JOIN {{ ref('company') }} c ON i.company_id = c.id
+      JOIN {{ ref('fund') }} f ON i.fund_id = f.id
+      WHERE i.instrument_type = 'EQUITY'
+      
+      -- Loan portfolio analysis  
+      SELECT i.*, f.name as fund_name
+      FROM {{ ref('instrument') }} i
+      JOIN {{ ref('fund') }} f ON i.fund_id = f.id
+      WHERE i.instrument_type = 'LOAN'
+      ```
+      
+      **Refresh Schedule:** Daily at 6:00 AM UTC
+      **Data Availability:** Complete instrument history from inception
     config:
       contract:
         enforced: true
@@ -63,6 +107,8 @@ models:
         description: "Foreign key to fund table"
         constraints:
           - type: not_null
+          - type: foreign_key
+            expression: "fund_id IN (SELECT id FROM {{ ref('fund') }})"
         tests:
           - not_null
           - relationships:
@@ -70,14 +116,44 @@ models:
               field: id
       - name: company_id
         data_type: varchar(36)
-        description: "Foreign key to company table (required for equity instruments)"
+        description: |
+          **Company Reference for Equity Instruments**
+          
+          Foreign key to company table, required for equity-type instruments (EQUITY, CONVERTIBLE, WARRANT).
+          Null for loan instruments and fund interests where no specific company relationship exists.
+          
+          **Business Rules:**
+          - Required (not null) for instrument_type IN ('EQUITY', 'CONVERTIBLE', 'WARRANT')
+          - Should be null for instrument_type IN ('LOAN', 'FUND_INTEREST')
+          
+          **BI Usage:** Join with company table for equity instrument analysis
+          **Join Pattern:** JOIN company c ON i.company_id = c.id WHERE i.instrument_type = 'EQUITY'
+        constraints:
+          - type: foreign_key
+            expression: "company_id IS NULL OR company_id IN (SELECT id FROM {{ ref('company') }})"
         tests:
           - relationships:
               to: ref('company')
               field: id
+              config:
+                where: "company_id IS NOT NULL"
       - name: instrument_type
         data_type: varchar(20)
-        description: "Type of instrument (EQUITY, LOAN, CONVERTIBLE, WARRANT, FUND_INTEREST)"
+        description: |
+          **Instrument Type Classification**
+          
+          Defines the type of financial instrument for proper analysis and reporting.
+          Critical field for filtering and grouping instruments by product type.
+          
+          **Valid Values:**
+          - EQUITY: Direct equity investments in portfolio companies
+          - LOAN: Loan instruments and credit facilities  
+          - CONVERTIBLE: Convertible securities (debt/equity hybrid)
+          - WARRANT: Warrant instruments for future equity acquisition
+          - FUND_INTEREST: Interests in other funds (fund-of-funds)
+          
+          **BI Usage:** Primary filter for product-specific analysis and reporting
+          **Query Pattern:** WHERE instrument_type = 'EQUITY' for equity-only analysis
         constraints:
           - type: not_null
         tests:
@@ -90,6 +166,8 @@ models:
         description: "Base currency code for the instrument"
         constraints:
           - type: not_null
+          - type: foreign_key
+            expression: "base_currency_code IN (SELECT code FROM {{ ref('currency') }})"
         tests:
           - not_null
           - relationships:

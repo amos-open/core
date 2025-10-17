@@ -113,7 +113,45 @@ models:
     
 
   - name: instrument_country
-    description: "Many-to-many relationship between instruments and countries with temporal allocations"
+    description: |
+      **Instrument Geographic Allocation Bridge**
+      
+      Temporal many-to-many relationship between instruments and countries with allocation percentages.
+      Supports both equity and loan instruments with time-based allocation tracking for regulatory and risk reporting.
+      
+      **Instrument-Centric Design:**
+      - Works with all instrument types (equity, loan, convertible, etc.)
+      - Temporal validity allows allocation changes over time
+      - Supports multiple country allocations per instrument
+      - Role field distinguishes different country relationships
+      
+      **Common BI Use Cases:**
+      - Geographic exposure analysis across all instrument types
+      - Country-based risk reporting and concentration analysis
+      - Regulatory reporting by jurisdiction
+      - Time-series geographic allocation tracking
+      
+      **Key Relationships:**
+      - Join with instrument to get instrument details and type
+      - Join with country for country names and regional groupings
+      - Filter by valid_from/valid_to for point-in-time analysis
+      
+      **Query Patterns:**
+      ```sql
+      -- Current geographic exposure by instrument type
+      SELECT i.instrument_type, c.name as country, ic.allocation_pct
+      FROM {{ ref('instrument_country') }} ic
+      JOIN {{ ref('instrument') }} i ON ic.instrument_id = i.id  
+      JOIN {{ ref('country') }} c ON ic.country_code = c.code
+      WHERE ic.valid_to IS NULL  -- Current allocations
+      
+      -- Primary country for each instrument
+      SELECT instrument_id, country_code, allocation_pct
+      FROM {{ ref('instrument_country') }}
+      WHERE primary_flag = true AND valid_to IS NULL
+      ```
+      
+      **Refresh Schedule:** Daily with instrument updates
     config:
       contract:
         enforced: true
@@ -186,7 +224,45 @@ models:
             - valid_from
 
   - name: instrument_industry
-    description: "Many-to-many relationship between instruments and industries with temporal allocations"
+    description: |
+      **Instrument Industry Allocation Bridge**
+      
+      Temporal many-to-many relationship between instruments and industries with allocation percentages.
+      Supports sector analysis across all instrument types with time-based allocation tracking.
+      
+      **Instrument-Centric Design:**
+      - Works with all instrument types (equity, loan, convertible, etc.)
+      - Temporal validity allows industry allocation changes over time
+      - Supports multiple industry allocations per instrument
+      - Primary flag identifies main industry classification
+      
+      **Common BI Use Cases:**
+      - Sector exposure analysis across portfolio
+      - Industry concentration risk reporting
+      - Sector performance analysis by instrument type
+      - Time-series industry allocation tracking
+      
+      **Key Relationships:**
+      - Join with instrument to get instrument details and type
+      - Join with industry for industry names and classifications
+      - Filter by valid_from/valid_to for point-in-time analysis
+      
+      **Query Patterns:**
+      ```sql
+      -- Current industry exposure by instrument type
+      SELECT i.instrument_type, ind.name as industry, ii.allocation_pct
+      FROM {{ ref('instrument_industry') }} ii
+      JOIN {{ ref('instrument') }} i ON ii.instrument_id = i.id
+      JOIN {{ ref('industry') }} ind ON ii.industry_id = ind.id
+      WHERE ii.valid_to IS NULL  -- Current allocations
+      
+      -- Primary industry for each instrument
+      SELECT instrument_id, industry_id, allocation_pct
+      FROM {{ ref('instrument_industry') }}
+      WHERE primary_flag = true AND valid_to IS NULL
+      ```
+      
+      **Refresh Schedule:** Daily with instrument updates
     config:
       contract:
         enforced: true

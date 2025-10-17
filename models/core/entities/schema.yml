@@ -169,9 +169,9 @@ models:
       ```sql
       -- Equity instruments by company
       SELECT c.name, COUNT(i.id) as instrument_count, SUM(s.fair_value_converted) as total_value
-      FROM {{ ref('company') }} c
-      JOIN {{ ref('instrument') }} i ON c.id = i.company_id
-      JOIN {{ ref('instrument_snapshot') }} s ON i.id = s.instrument_id
+      FROM company c
+      JOIN instrument i ON c.id = i.company_id
+      JOIN instrument_snapshot s ON i.id = s.instrument_id
       WHERE i.instrument_type = 'EQUITY'
       GROUP BY c.name
       ```

@@ -140,14 +140,14 @@ models:
       ```sql
       -- Current geographic exposure by instrument type
       SELECT i.instrument_type, c.name as country, ic.allocation_pct
-      FROM {{ ref('instrument_country') }} ic
-      JOIN {{ ref('instrument') }} i ON ic.instrument_id = i.id  
-      JOIN {{ ref('country') }} c ON ic.country_code = c.code
+      FROM instrument_country ic
+      JOIN instrument i ON ic.instrument_id = i.id  
+      JOIN country c ON ic.country_code = c.code
       WHERE ic.valid_to IS NULL  -- Current allocations
       
       -- Primary country for each instrument
       SELECT instrument_id, country_code, allocation_pct
-      FROM {{ ref('instrument_country') }}
+      FROM instrument_country
       WHERE primary_flag = true AND valid_to IS NULL
       ```
       
@@ -251,14 +251,14 @@ models:
       ```sql
       -- Current industry exposure by instrument type
       SELECT i.instrument_type, ind.name as industry, ii.allocation_pct
-      FROM {{ ref('instrument_industry') }} ii
-      JOIN {{ ref('instrument') }} i ON ii.instrument_id = i.id
-      JOIN {{ ref('industry') }} ind ON ii.industry_id = ind.id
+      FROM instrument_industry ii
+      JOIN instrument i ON ii.instrument_id = i.id
+      JOIN industry ind ON ii.industry_id = ind.id
       WHERE ii.valid_to IS NULL  -- Current allocations
       
       -- Primary industry for each instrument
       SELECT instrument_id, industry_id, allocation_pct
-      FROM {{ ref('instrument_industry') }}
+      FROM instrument_industry
       WHERE primary_flag = true AND valid_to IS NULL
       ```
       

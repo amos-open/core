@@ -304,14 +304,16 @@ models:
           - relationships:
               to: ref('fund')
               field: id
-      - name: investment_id
+      - name: instrument_id
         data_type: uuid
-        description: "Foreign key to investment table (for investment-related transactions)"
+        description: "Foreign key to instrument table (for instrument-related transactions)"
         tests:
           - relationships:
-              to: ref('investment')
+              to: ref('instrument')
               field: id
-
+      - name: facility_id
+        data_type: uuid
+        description: "Foreign key to facility table (for loan facility transactions)"
       - name: commitment_id
         data_type: uuid
         description: "Foreign key to commitment table (for capital call/distribution transactions)"
@@ -320,14 +322,15 @@ models:
               to: ref('commitment')
               field: id
       - name: tx_type
-        data_type: varchar(20)
+        data_type: varchar(30)
         description: "Transaction type classification"
         constraints:
           - type: not_null
         tests:
           - not_null
           - accepted_values:
-              values: ['CAPITAL_CALL', 'DISTRIBUTION', 'INVESTMENT', 'DIVESTMENT', 'LOAN_DRAW', 'LOAN_REPAYMENT', 'INTEREST_PAYMENT', 'FEE_PAYMENT', 'EXPENSE', 'INCOME', 'TRANSFER']
+              values: ['DRAWDOWN', 'DISTRIBUTION', 'DIVIDEND', 'INVESTMENT_TRANSACTION', 'EXPENSE', 'MANAGEMENT_FEE', 'LOAN_RECEIVED', 'LOAN_DRAW', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT']
+              quote: true
       - name: transaction_date
         data_type: date
         description: "Date when the transaction occurred"

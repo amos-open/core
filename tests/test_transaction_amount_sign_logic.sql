@@ -4,16 +4,16 @@
 -- This is a business logic validation test
 SELECT 
     id,
-    tx_type,
+    transaction_type,
     amount,
     CASE 
-        WHEN tx_type IN ('DRAWDOWN', 'INVESTMENT_TRANSACTION', 'LOAN_DRAW', 'MANAGEMENT_FEE', 'EXPENSE') AND amount > 0 THEN 'Unexpected positive amount for outflow transaction'
-        WHEN tx_type IN ('DISTRIBUTION', 'DIVIDEND', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT') AND amount < 0 THEN 'Unexpected negative amount for inflow transaction'
+        WHEN transaction_type IN ('DRAWDOWN', 'INVESTMENT_TRANSACTION', 'LOAN_DRAW', 'MANAGEMENT_FEE', 'EXPENSE') AND amount > 0 THEN 'Unexpected positive amount for outflow transaction'
+        WHEN transaction_type IN ('DISTRIBUTION', 'DIVIDEND', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT') AND amount < 0 THEN 'Unexpected negative amount for inflow transaction'
         ELSE NULL
     END as validation_warning
 FROM {{ ref('transaction') }}
 WHERE CASE 
-    WHEN tx_type IN ('DRAWDOWN', 'INVESTMENT_TRANSACTION', 'LOAN_DRAW', 'MANAGEMENT_FEE', 'EXPENSE') AND amount > 0 THEN TRUE
-    WHEN tx_type IN ('DISTRIBUTION', 'DIVIDEND', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT') AND amount < 0 THEN TRUE
+    WHEN transaction_type IN ('DRAWDOWN', 'INVESTMENT_TRANSACTION', 'LOAN_DRAW', 'MANAGEMENT_FEE', 'EXPENSE') AND amount > 0 THEN TRUE
+    WHEN transaction_type IN ('DISTRIBUTION', 'DIVIDEND', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT') AND amount < 0 THEN TRUE
     ELSE FALSE
 END

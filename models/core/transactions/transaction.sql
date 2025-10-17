@@ -2,7 +2,7 @@
   config(
     materialized='incremental',
     unique_key='id',
-    cluster_by=['transaction_date', 'fund_id', 'tx_type'],
+    cluster_by=['transaction_date', 'fund_id', 'transaction_type'],
     tags=['bi_accessible', 'canonical', 'transaction'],
     on_schema_change='fail'
   )
@@ -16,10 +16,10 @@ validated_transaction AS (
   SELECT
     id,
     fund_id,
-    investment_id,
-    loan_id,
+    instrument_id,
+    facility_id,
     commitment_id,
-    tx_type,
+    transaction_type,
     transaction_date,
     amount,
     currency_code,
@@ -33,43 +33,43 @@ validated_transaction AS (
     -- Basic validation
     AND id IS NOT NULL
     AND fund_id IS NOT NULL
-    AND tx_type IS NOT NULL
+    AND transaction_type IS NOT NULL
     AND transaction_date IS NOT NULL
     AND amount IS NOT NULL
     AND currency_code IS NOT NULL
     -- Business rule validation
     AND LENGTH(currency_code) = 3
     AND transaction_date <= CURRENT_DATE()
-    -- Validate tx_type enum values
-    AND tx_type IN (
-      'CAPITAL_CALL',
+    -- Validate transaction_type enum values per DBML specification
+    AND transaction_type IN (
+      'DRAWDOWN',
       'DISTRIBUTION',
-      'INVESTMENT',
-      'DIVESTMENT',
-      'LOAN_DRAW',
-      'LOAN_REPAYMENT',
-      'INTEREST_PAYMENT',
-      'FEE_PAYMENT',
+      'DIVIDEND',
+      'INVESTMENT_TRANSACTION',
       'EXPENSE',
-      'INCOME',
-      'TRANSFER'
+      'MANAGEMENT_FEE',
+      'LOAN_RECEIVED',
+      'LOAN_DRAW',
+      'LOAN_PRINCIPAL_REPAYMENT',
+      'LOAN_INTEREST_RECEIPT',
+      'LOAN_FEE_RECEIPT'
     )
     -- Ensure related entity references are consistent
     AND (
-      (tx_type IN ('INVESTMENT', 'DIVESTMENT') AND investment_id IS NOT NULL) OR
-      (tx_type IN ('LOAN_DRAW', 'LOAN_REPAYMENT', 'INTEREST_PAYMENT') AND loan_id IS NOT NULL) OR
-      (tx_type IN ('CAPITAL_CALL', 'DISTRIBUTION') AND commitment_id IS NOT NULL) OR
-      (tx_type IN ('FEE_PAYMENT', 'EXPENSE', 'INCOME', 'TRANSFER'))
+      (transaction_type IN ('INVESTMENT_TRANSACTION', 'DIVIDEND') AND instrument_id IS NOT NULL) OR
+      (transaction_type IN ('LOAN_RECEIVED', 'LOAN_DRAW', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT') AND (instrument_id IS NOT NULL OR facility_id IS NOT NULL)) OR
+      (transaction_type IN ('DRAWDOWN', 'DISTRIBUTION') AND commitment_id IS NOT NULL) OR
+      (transaction_type IN ('EXPENSE', 'MANAGEMENT_FEE'))
     )
 )
 
 SELECT
   id,
   fund_id,
-  investment_id,
-  loan_id,
+  instrument_id,
+  facility_id,
   commitment_id,
-  tx_type,
+  transaction_type,
   transaction_date,
   amount,
   currency_code,

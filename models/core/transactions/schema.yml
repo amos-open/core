@@ -1,0 +1,219 @@
+version: 2
+
+models:
+  - name: transaction
+    description: "All financial transactions across funds, instruments, and commitments"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        description: "Unique identifier for the transaction"
+        data_type: varchar(36)
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+
+      - name: fund_id
+        description: "Foreign key reference to the fund table"
+        data_type: varchar(36)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fund')
+              field: id
+
+      - name: instrument_id
+        description: "Optional foreign key reference to the instrument table"
+        data_type: varchar(36)
+        tests:
+          - relationships:
+              to: ref('instrument')
+              field: id
+              config:
+                where: "instrument_id IS NOT NULL"
+
+      - name: facility_id
+        description: "Optional foreign key reference to the facility table (handled in PC package)"
+        data_type: varchar(36)
+
+      - name: commitment_id
+        description: "Optional foreign key reference to the commitment table"
+        data_type: varchar(36)
+        tests:
+          - relationships:
+              to: ref('commitment')
+              field: id
+              config:
+                where: "commitment_id IS NOT NULL"
+
+      - name: transaction_type
+        description: "Type of transaction (DRAWDOWN, DISTRIBUTION, DIVIDEND, etc.)"
+        data_type: varchar(30)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DRAWDOWN', 'DISTRIBUTION', 'DIVIDEND', 'INVESTMENT_TRANSACTION', 'EXPENSE', 'MANAGEMENT_FEE', 'LOAN_RECEIVED', 'LOAN_DRAW', 'LOAN_PRINCIPAL_REPAYMENT', 'LOAN_INTEREST_RECEIPT', 'LOAN_FEE_RECEIPT']
+              quote: true
+
+      - name: transaction_date
+        description: "Date when the transaction occurred"
+        data_type: date
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: amount
+        description: "Transaction amount in the specified currency"
+        data_type: decimal(18,2)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: currency_code
+        description: "ISO 3-letter currency code"
+        data_type: varchar(3)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+
+      - name: description
+        description: "Optional description of the transaction"
+        data_type: varchar(500)
+
+      - name: reference_number
+        description: "Optional external reference number"
+        data_type: varchar(100)
+
+      - name: counterparty_id
+        description: "Optional foreign key reference to the counterparty table"
+        data_type: varchar(36)
+        tests:
+          - relationships:
+              to: ref('counterparty')
+              field: id
+              config:
+                where: "counterparty_id IS NOT NULL"
+
+      - name: created_at
+        description: "Timestamp when the record was created"
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: updated_at
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+  - name: instrument_cashflow
+    description: "Unified cashflows for all instrument types (equity and loan instruments)"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        description: "Unique identifier for the cashflow record"
+        data_type: varchar(36)
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+
+      - name: instrument_id
+        description: "Foreign key reference to the instrument table"
+        data_type: varchar(36)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('instrument')
+              field: id
+
+      - name: transaction_id
+        description: "Optional foreign key reference to the transaction table"
+        data_type: varchar(36)
+        tests:
+          - relationships:
+              to: ref('transaction')
+              field: id
+              config:
+                where: "transaction_id IS NOT NULL"
+
+      - name: cashflow_type
+        description: "Type of cashflow (CONTRIBUTION, DISTRIBUTION, DIVIDEND, etc.)"
+        data_type: varchar(20)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['CONTRIBUTION', 'DISTRIBUTION', 'DIVIDEND', 'INTEREST', 'FEE', 'PRINCIPAL', 'DRAW', 'PREPAYMENT', 'OTHER']
+              quote: true
+
+      - name: cashflow_date
+        description: "Date when the cashflow occurred"
+        data_type: date
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: amount
+        description: "Cashflow amount in the specified currency"
+        data_type: decimal(18,2)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: currency_code
+        description: "ISO 3-letter currency code"
+        data_type: varchar(3)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+          - relationships:
+              to: ref('currency')
+              field: code
+
+      - name: description
+        description: "Optional description of the cashflow"
+        data_type: varchar(500)
+
+      - name: created_at
+        description: "Timestamp when the record was created"
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null
+        tests:
+          - not_null
+
+      - name: updated_at
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null
+        tests:
+          - not_null

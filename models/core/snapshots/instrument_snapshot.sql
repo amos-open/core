@@ -9,7 +9,7 @@
 }}
 
 WITH staging_instrument_snapshot AS (
-  SELECT * FROM {{ ref('stg_instrument_snapshots') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_snapshots_investment_nav') }}
 ),
 
 validated_instrument_snapshot AS (

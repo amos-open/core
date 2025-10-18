@@ -5,8 +5,9 @@ config-version: 2
 profile: 'default'  # change to your profile name
 
 vars:
-  active_source: "{{ var('active_source', 'example') }}"
-  source_package: "{{ var('source_package', 'amos_source_example') }}"
+  # WORKAROUND for dbt-fusion: Remove recursive var() definitions
+  active_source: "example"
+  source_package: "amos_source_example"
 
 model-paths: ["models"]
 macro-paths: ["macros"]
@@ -16,11 +17,12 @@ clean-targets: ["target", "dbt_packages"]
 models:
   amos_core:
     +materialized: view
-    staging:
-      +schema: stg_core
     core:
       +schema: public
       +database: core
+      # Exclude access_patterns - just documentation, causes dbt-fusion panic
+      access_patterns:
+        +enabled: false
       reference:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'reference']
@@ -34,11 +36,13 @@ models:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'bridge']
       snapshots:
-        +materialized: incremental
-        +on_schema_change: 'fail'
+        +materialized: table
         +tags: ['bi_accessible', 'canonical', 'snapshot']
       supporting:
         +materialized: table
         +tags: ['bi_accessible', 'canonical', 'supporting']
+      transactions:
+        +materialized: table
+        +tags: ['bi_accessible', 'canonical', 'transactions']
     marts:
       +schema: marts

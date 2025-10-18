@@ -9,7 +9,7 @@
 }}
 
 WITH staging_fund_snapshot AS (
-  SELECT * FROM {{ ref('stg_fund_snapshot') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_snapshots_fund_nav') }}
 ),
 
 validated_fund_snapshot AS (

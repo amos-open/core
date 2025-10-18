@@ -7,7 +7,7 @@
 }}
 
 WITH staging_shareholder AS (
-  SELECT * FROM {{ ref('stg_shareholder') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_admin_investors') }}
 ),
 
 validated_shareholder AS (

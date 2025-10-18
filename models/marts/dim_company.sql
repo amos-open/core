@@ -3,4 +3,4 @@ select
   c.company_name,
   c.country_code,
   c.currency_code
-from {{ ref('stg_company') }} c
+from {{ ref('amos_source_example', 'int_entities_company') }} c

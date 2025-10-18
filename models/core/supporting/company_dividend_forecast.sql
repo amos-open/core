@@ -7,7 +7,7 @@
 }}
 
 WITH staging_company_dividend_forecast AS (
-  SELECT * FROM {{ ref('stg_company_dividend_forecast') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_pm_company_financials') }}
 ),
 
 validated_company_dividend_forecast AS (

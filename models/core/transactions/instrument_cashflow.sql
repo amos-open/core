@@ -9,7 +9,7 @@
 }}
 
 WITH staging_instrument_cashflow AS (
-  SELECT * FROM {{ ref('stg_instrument_cashflow') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_transactions_capital_calls') }}
 ),
 
 validated_instrument_cashflow AS (

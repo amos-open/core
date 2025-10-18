@@ -7,7 +7,7 @@
 }}
 
 WITH staging_counterparty AS (
-  SELECT * FROM {{ ref(var('source_package'), 'int_entities_counterparty') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_entities_counterparty') }}
 ),
 
 validated_counterparty AS (

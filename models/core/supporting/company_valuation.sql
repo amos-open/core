@@ -7,7 +7,7 @@
 }}
 
 WITH staging_company_valuation AS (
-  SELECT * FROM {{ ref('stg_company_valuation') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_pm_valuations') }}
 ),
 
 validated_company_valuation AS (

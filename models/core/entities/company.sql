@@ -7,7 +7,7 @@
 }}
 
 WITH staging_company AS (
-  SELECT * FROM {{ ref(var('source_package'), 'int_entities_company') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_entities_company') }}
 ),
 
 validated_company AS (

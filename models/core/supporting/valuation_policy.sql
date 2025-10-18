@@ -7,7 +7,7 @@
 }}
 
 WITH staging_valuation_policy AS (
-  SELECT * FROM {{ ref('stg_valuation_policy') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_pm_valuations') }}
 ),
 
 validated_valuation_policy AS (

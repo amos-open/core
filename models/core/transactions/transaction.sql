@@ -9,7 +9,7 @@
 }}
 
 WITH staging_transaction AS (
-  SELECT * FROM {{ ref('stg_transaction') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_transactions_investments') }}
 ),
 
 validated_transaction AS (

@@ -6,7 +6,7 @@
 }}
 
 WITH staging_stage AS (
-  SELECT * FROM {{ ref('stg_stage') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_crm_opportunities') }}
 ),
 
 validated_stage AS (

@@ -7,7 +7,7 @@
 }}
 
 WITH staging_investment_round AS (
-  SELECT * FROM {{ ref('stg_investment_round') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_pm_investments') }}
 ),
 
 validated_investment_round AS (

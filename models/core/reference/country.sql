@@ -6,7 +6,7 @@
 }}
 
 WITH staging_country AS (
-  SELECT * FROM {{ ref('stg_country') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_ref_countries') }}
 ),
 
 validated_country AS (

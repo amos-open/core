@@ -6,7 +6,7 @@
 }}
 
 WITH staging_currency AS (
-  SELECT * FROM {{ ref('stg_currency') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_ref_currencies') }}
 ),
 
 validated_currency AS (

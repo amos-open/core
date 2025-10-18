@@ -6,7 +6,7 @@
 }}
 
 WITH staging_investor_type AS (
-  SELECT * FROM {{ ref('stg_investor_type') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_admin_investors') }}
 ),
 
 validated_investor_type AS (

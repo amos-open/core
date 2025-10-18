@@ -7,7 +7,7 @@
 }}
 
 WITH staging_company_industry AS (
-  SELECT * FROM {{ ref('stg_company_industry') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_relationships_company_industry') }}
 ),
 
 validated_company_industry AS (

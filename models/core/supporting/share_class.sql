@@ -7,7 +7,7 @@
 }}
 
 WITH staging_share_class AS (
-  SELECT * FROM {{ ref('stg_share_class') }}
+  SELECT * FROM {{ ref('amos_source_example', 'stg_pm_investments') }}
 ),
 
 validated_share_class AS (

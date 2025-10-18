@@ -327,8 +327,5 @@ models:
             - industry_id
             - valid_from
 
-  - name: opportunity_country
-    description: "Many-to-many relationship between opportunities and countries"
-    
-  - name: opportunity_industry
-    description: "Many-to-many relationship between opportunities and industries"
+  
+  

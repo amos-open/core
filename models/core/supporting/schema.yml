@@ -300,9 +300,6 @@ models:
             - round_name
             - round_date
     
-  - name: commitment_record
-    description: "Detailed commitment records and transactions"
-    
   - name: company_valuation
     description: "Company valuation history and methodologies with temporal tracking"
     config:

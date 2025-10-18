@@ -11,11 +11,11 @@ WITH staging_investor_type AS (
 
 validated_investor_type AS (
   SELECT
-    id,
-    name,
-    kyc_category,
-    created_at,
-    updated_at
+    id,  -- Generated in staging from investor_code
+    INVESTOR_NAME as name,
+    STANDARDIZED_INVESTOR_TYPE as kyc_category,
+    CREATED_DATE as created_at,
+    LAST_MODIFIED_DATE as updated_at
   FROM staging_investor_type
   WHERE 1=1
     -- Basic validation

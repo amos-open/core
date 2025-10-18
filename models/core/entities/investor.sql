@@ -19,9 +19,10 @@ validated_investor AS (
     updated_at
   FROM staging_investor
   WHERE 1=1
-    -- Basic validation
-    AND id IS NOT NULL
-    AND name IS NOT NULL
+    -- Entity base validation
+    AND {{ validate_entity_base_fields('id', 'name') }}
+    -- Investor-specific business rules
+    AND {{ validate_investor_business_rules('investor_type_id') }}
 )
 
 SELECT

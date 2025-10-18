@@ -4,7 +4,7 @@ with t as (
 f as (select fund_id, fund_code from {{ ref('amos_source_example', 'int_entities_fund') }}),
 i as (select investor_id, investor_code from {{ ref('amos_source_example', 'int_entities_investor') }})
 select
-  {{ dbt_utils.generate_surrogate_key(['t.source_system','t.transaction_type','t.natural_key']) }} as transaction_id,
+  cast(hash(t.source_system, t.transaction_type, t.natural_key) as varchar) as transaction_id,
   f.fund_id,
   i.investor_id,
   t.date,

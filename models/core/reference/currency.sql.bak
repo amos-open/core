@@ -11,16 +11,16 @@ WITH staging_currency AS (
 
 validated_currency AS (
   SELECT
-    currency_code as code,
-    currency_name as name,
-    created_date as created_at,
-    last_modified_date as updated_at
+    code,
+    name,
+    created_at,
+    updated_at
   FROM staging_currency
   WHERE 1=1
     -- Basic validation
-    AND currency_code IS NOT NULL
-    AND currency_name IS NOT NULL
-    AND LENGTH(currency_code) = 3
+    AND code IS NOT NULL
+    AND name IS NOT NULL
+    AND LENGTH(code) = 3
 )
 
 SELECT

@@ -12,10 +12,10 @@ WITH staging_stage AS (
 validated_stage AS (
   SELECT
     id,
-    stage as name,
-    deal_type as type,
-    created_date as created_at,
-    last_modified_date as updated_at
+    name,
+    type,
+    created_at,
+    updated_at
   FROM staging_stage
   WHERE 1=1
     -- Basic validation

@@ -20,11 +20,10 @@ validated_counterparty AS (
     updated_at
   FROM staging_counterparty
   WHERE 1=1
-    -- Basic validation
-    AND id IS NOT NULL
-    AND name IS NOT NULL
-    -- Business rule validation
-    AND (country_code IS NULL OR LENGTH(country_code) = 2)
+    -- Entity base validation
+    AND {{ validate_entity_base_fields('id', 'name') }}
+    -- Counterparty-specific business rules
+    AND {{ validate_counterparty_business_rules('type', 'country_code') }}
 )
 
 SELECT

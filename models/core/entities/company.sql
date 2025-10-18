@@ -22,11 +22,10 @@ validated_company AS (
     updated_at
   FROM staging_company
   WHERE 1=1
-    -- Basic validation
-    AND id IS NOT NULL
-    AND name IS NOT NULL
-    -- Business rule validation
-    AND (currency IS NULL OR LENGTH(currency) = 3)
+    -- Entity base validation
+    AND {{ validate_entity_base_fields('id', 'name') }}
+    -- Company-specific business rules
+    AND {{ validate_company_business_rules('currency', 'website', 'industry_id') }}
 )
 
 SELECT

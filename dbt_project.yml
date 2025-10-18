@@ -2,6 +2,9 @@ name: 'amos_core'
 version: '0.0.1'
 config-version: 2
 
+# Allow dbt 1.x and 2.x (dbt-fusion preview) to silence compatibility warning
+require-dbt-version: [">=1.0.0", "<3.0.0"]
+
 profile: 'default'  # change to your profile name
 
 vars:

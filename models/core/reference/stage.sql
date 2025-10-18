@@ -11,11 +11,11 @@ WITH staging_stage AS (
 
 validated_stage AS (
   SELECT
-    id,
+    CAST(id AS VARCHAR) as id,
     stage as name,
     deal_type as type,
-    created_date as created_at,
-    last_modified_date as updated_at
+    CAST(created_date AS timestamp_ntz) as created_at,
+    CAST(last_modified_date AS timestamp_ntz) as updated_at
   FROM staging_stage
   WHERE 1=1
     -- Basic validation

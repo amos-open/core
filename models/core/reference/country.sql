@@ -11,12 +11,12 @@ WITH staging_country AS (
 
 validated_country AS (
   SELECT
-    code,
-    name,
+    country_code as code,
+    country_name as name,
     region,
-    subregion,
-    created_at,
-    updated_at
+    sub_region as subregion,
+    CAST(created_date AS timestamp_ntz) as created_at,
+    CAST(last_modified_date AS timestamp_ntz) as updated_at
   FROM staging_country
   WHERE 1=1
     -- Basic validation

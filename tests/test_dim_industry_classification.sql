@@ -19,7 +19,7 @@ WITH validation_checks AS (
       WHEN NOT REGEXP_LIKE(code, '^[A-Z_]+$') THEN 'Industry code must contain only uppercase letters and underscores'
       ELSE NULL
     END AS error_message
-  FROM {{ ref('dim_industry') }}
+  FROM {{ ref('industry') }}
 )
 
 SELECT 

@@ -6,7 +6,7 @@
 SELECT 
   code,
   'Invalid ISO currency code format' AS error_message
-FROM {{ ref('dim_currency') }}
+FROM {{ ref('currency') }}
 WHERE 
   code IS NULL 
   OR LENGTH(code) != 3

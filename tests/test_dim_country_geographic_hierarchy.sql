@@ -37,7 +37,7 @@ country_validation AS (
       WHEN k.region IS NULL THEN 'Invalid region/subregion combination: ' || c.region || '/' || c.subregion
       ELSE NULL
     END AS error_message
-  FROM {{ ref('dim_country') }} c
+  FROM {{ ref('country') }} c
   LEFT JOIN known_region_subregion_combinations k 
     ON c.region = k.region AND c.subregion = k.subregion
 )

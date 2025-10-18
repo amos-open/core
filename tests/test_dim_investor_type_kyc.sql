@@ -18,7 +18,7 @@ WITH kyc_validation AS (
         THEN 'Retail investors may not require enhanced KYC procedures'
       ELSE NULL
     END AS warning_message
-  FROM {{ ref('dim_investor_type') }}
+  FROM {{ ref('investor_type') }}
 )
 
 SELECT 

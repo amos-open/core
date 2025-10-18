@@ -14,7 +14,7 @@ WITH validation_checks AS (
       WHEN decimal_places NOT IN (0, 2, 3, 4) THEN 'Invalid decimal places - must be 0, 2, 3, or 4'
       ELSE NULL
     END AS error_message
-  FROM {{ ref('dim_currency') }}
+  FROM {{ ref('currency') }}
 )
 
 SELECT 

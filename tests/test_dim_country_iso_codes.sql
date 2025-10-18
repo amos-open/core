@@ -8,7 +8,7 @@ SELECT
   iso3_code,
   name,
   'Invalid ISO country code format' AS error_message
-FROM {{ ref('dim_country') }}
+FROM {{ ref('country') }}
 WHERE 
   -- Check 2-letter code format
   (code IS NULL OR LENGTH(code) != 2 OR NOT REGEXP_LIKE(code, '^[A-Z]{2}$'))

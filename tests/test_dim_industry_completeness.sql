@@ -15,7 +15,7 @@ WITH required_sectors AS (
 
 current_sectors AS (
   SELECT DISTINCT sector
-  FROM {{ ref('dim_industry') }}
+  FROM {{ ref('industry') }}
   WHERE is_active = TRUE
 ),
 

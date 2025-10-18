@@ -18,14 +18,14 @@ WITH stage_validation AS (
         THEN 'Stage order must be increasing within category'
       ELSE NULL
     END AS error_message
-  FROM {{ ref('dim_stage') }}
+  FROM {{ ref('stage') }}
 ),
 
 duplicate_orders AS (
   SELECT 
     stage_order,
     COUNT(*) AS order_count
-  FROM {{ ref('dim_stage') }}
+  FROM {{ ref('stage') }}
   GROUP BY stage_order
   HAVING COUNT(*) > 1
 )

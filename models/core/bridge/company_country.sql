@@ -16,8 +16,8 @@ validated_company_country AS (
     country_code,
     is_primary_geography as primary_flag,
     normalized_allocation_percentage as allocation_pct,
-    processed_at as created_at,
-    processed_at as updated_at
+    CAST(processed_at AS TIMESTAMP_NTZ) as created_at,
+    CAST(processed_at AS TIMESTAMP_NTZ) as updated_at
   FROM staging_company_country
   WHERE 1=1
     -- Basic validation

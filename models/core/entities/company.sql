@@ -14,6 +14,10 @@ validated_company AS (
   SELECT
     id,
     name,
+    null as currency,
+    null as website,
+    null as description,
+    null as industry_id,
     created_at,
     updated_at
   FROM intermediate_company
@@ -26,6 +30,10 @@ validated_company AS (
 SELECT
   id,
   name,
+  currency,
+  website,
+  description,
+  industry_id,
   created_at,
   updated_at
 FROM validated_company

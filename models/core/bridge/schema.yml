@@ -8,7 +8,7 @@ models:
         enforced: true
     columns:
       - name: company_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to company table"
         constraints:
           - type: not_null
@@ -18,7 +18,7 @@ models:
               to: ref('company')
               field: id
       - name: industry_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to industry table"
         constraints:
           - type: not_null
@@ -63,7 +63,7 @@ models:
         enforced: true
     columns:
       - name: company_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to company table"
         constraints:
           - type: not_null
@@ -278,7 +278,7 @@ models:
               to: ref('instrument')
               field: id
       - name: industry_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to industry table"
         constraints:
           - type: not_null

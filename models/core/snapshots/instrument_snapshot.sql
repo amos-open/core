@@ -28,6 +28,9 @@ validated_instrument_snapshot AS (
     
     -- Basic loan fields (detailed loan snapshots in PC package)
     null as principal_outstanding,
+    null as undrawn_commitment,
+    null as accrued_income,
+    null as accrued_fees,
     undrawn_commitment,
     accrued_income,
     accrued_fees,

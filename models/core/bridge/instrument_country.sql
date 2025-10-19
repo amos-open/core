@@ -14,13 +14,13 @@ validated_instrument_country AS (
   SELECT
     null as instrument_id,
     country_code,
-    processed_at as valid_from,
-    null as valid_to,
+    CAST(processed_at AS DATE) as valid_from,
+    CAST(null AS DATE) as valid_to,
     normalized_allocation_percentage as allocation_pct,
-    geography_type as role,
+    'INVESTMENT' as role,
     is_primary_geography as primary_flag,
-    processed_at as created_at,
-    processed_at as updated_at
+    CAST(processed_at AS TIMESTAMP_NTZ) as created_at,
+    CAST(processed_at AS TIMESTAMP_NTZ) as updated_at
   FROM staging_instrument_country
   WHERE 1=1
     -- Basic validation

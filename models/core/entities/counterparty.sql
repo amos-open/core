@@ -14,16 +14,16 @@ validated_counterparty AS (
   SELECT
     id,
     name,
-    type,
+    counterparty_type as type,
     country_code,
-    created_at,
-    updated_at
+    CAST(created_date AS timestamp_ntz) as created_at,
+    CAST(last_modified_date AS timestamp_ntz) as updated_at
   FROM staging_counterparty
   WHERE 1=1
     -- Entity base validation
     AND {{ validate_entity_base_fields('id', 'name') }}
     -- Counterparty-specific business rules
-    AND {{ validate_counterparty_business_rules('type', 'country_code') }}
+    AND {{ validate_counterparty_business_rules('counterparty_type', 'country_code') }}
 )
 
 SELECT

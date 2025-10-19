@@ -11,8 +11,8 @@ WITH company_base AS (
     SELECT 
         id,
         name,
-        company_type,
-        status
+        null as company_type,
+        null as status
     FROM {{ ref('company') }}
 ),
 

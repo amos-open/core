@@ -7,7 +7,7 @@
 }}
 
 WITH staging_fund AS (
-  SELECT * FROM {{ ref('int_entities_fund') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_entities_fund') }}
 ),
 
 validated_fund AS (
@@ -22,8 +22,8 @@ validated_fund AS (
     null as target_commitment,
     null as incorporated_in,
     base_currency_code,
-    CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ) as created_at,
-    CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ) as updated_at
+    created_at,
+    updated_at
   FROM staging_fund
   WHERE 1=1
     -- Entity base validation

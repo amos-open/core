@@ -9,35 +9,32 @@
 }}
 
 WITH staging_instrument_snapshot AS (
-  SELECT * FROM {{ ref('int_snapshots_investment_nav') }}
+  SELECT * FROM {{ ref('amos_source_example', 'int_snapshots_investment_nav') }}
 ),
 
 validated_instrument_snapshot AS (
   SELECT
-    snapshot_id as id,
-    null as instrument_id,
-    snapshot_date as as_of_date,
-    cost_currency as currency_code,
-    cost_fx_rate as fx_rate,
+    s.snapshot_id as id,
+    i.id as instrument_id,
+    s.snapshot_date as as_of_date,
+    'USD' as currency_code,
+    s.fair_value_fx_rate as fx_rate,
     
     -- Common valuation fields
-    fair_value,
-    cost_basis as amortized_cost,
-    fair_value as fair_value_converted,
-    cost_basis as amortized_cost_converted,
+    s.fair_value_usd as fair_value,
+    null as amortized_cost,
+    s.fair_value_usd as fair_value_converted,
+    null as amortized_cost_converted,
     
     -- Basic loan fields (detailed loan snapshots in PC package)
     null as principal_outstanding,
     null as undrawn_commitment,
     null as accrued_income,
     null as accrued_fees,
-    undrawn_commitment,
-    accrued_income,
-    accrued_fees,
-    principal_outstanding_converted,
-    undrawn_commitment_converted,
-    accrued_income_converted,
-    accrued_fees_converted,
+    null as principal_outstanding_converted,
+    null as undrawn_commitment_converted,
+    null as accrued_income_converted,
+    null as accrued_fees_converted,
     
     -- Equity-specific fields (null for loan instruments)
     equity_stake_pct,
@@ -45,11 +42,14 @@ validated_instrument_snapshot AS (
     equity_exit_proceeds_actual,
     equity_exit_proceeds_forecast,
     
-    source,
+    'ADMIN' as source,
     source_file_ref,
     created_at,
     updated_at
-  FROM staging_instrument_snapshot
+  FROM staging_instrument_snapshot s
+  LEFT JOIN {{ ref('instrument') }} i
+    ON i.fund_id = s.canonical_fund_id
+    AND i.company_id = s.canonical_company_id
   WHERE 1=1
     -- Basic validation
     AND id IS NOT NULL

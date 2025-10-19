@@ -11,8 +11,8 @@ WITH investor_base AS (
     SELECT 
         id,
         name,
-        investor_type,
-        status
+        investor_type_id as investor_type,
+        null as status
     FROM {{ ref('investor') }}
 ),
 

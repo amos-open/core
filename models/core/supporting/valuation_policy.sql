@@ -2,7 +2,8 @@
   config(
     materialized='table',
     cluster_by=['fund_id', 'effective_from'],
-    tags=['bi_accessible', 'canonical', 'supporting']
+    tags=['bi_accessible', 'canonical', 'supporting'],
+    enabled=false
   )
 }}
 

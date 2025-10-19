@@ -1,6 +1,6 @@
 select
-  c.company_id,
-  c.company_name,
+  c.id as company_id,
+  c.name as company_name,
   c.country_code,
-  c.currency_code
-from {{ ref('amos_source_example', 'int_entities_company') }} c
+  null as currency_code
+from {{ ref('int_entities_company') }} c

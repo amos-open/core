@@ -9,22 +9,22 @@
 }}
 
 WITH staging_fund_snapshot AS (
-  SELECT * FROM {{ ref('amos_source_example', 'int_snapshots_fund_nav') }}
+  SELECT * FROM {{ ref('int_snapshots_fund_nav') }}
 ),
 
 validated_fund_snapshot AS (
   SELECT
-    fund_id,
-    as_of_date,
-    total_nav,
-    total_commitment,
-    total_called,
-    total_distributed,
-    dpi,
-    rvpi,
-    expected_coc,
-    created_at,
-    updated_at
+    canonical_fund_id as fund_id,
+    snapshot_date as as_of_date,
+    total_nav_usd as total_nav,
+    committed_capital_usd as total_commitment,
+    called_capital_usd as total_called,
+    distributed_capital_usd as total_distributed,
+    dpi_ratio as dpi,
+    rvpi_ratio as rvpi,
+    CAST(null AS NUMBER) as expected_coc,
+    CAST(created_date AS timestamp_ntz) as created_at,
+    CAST(last_modified_date AS timestamp_ntz) as updated_at
   FROM staging_fund_snapshot
   WHERE 1=1
     -- Basic validation

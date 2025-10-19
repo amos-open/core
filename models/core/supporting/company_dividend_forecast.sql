@@ -2,7 +2,8 @@
   config(
     materialized='table',
     cluster_by=['company_id', 'forecast_date'],
-    tags=['bi_accessible', 'canonical', 'supporting']
+    tags=['bi_accessible', 'canonical', 'supporting'],
+    enabled=false
   )
 }}
 

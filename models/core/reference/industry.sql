@@ -13,8 +13,8 @@ validated_industry AS (
   SELECT
     id,
     industry_name as name,
-    created_date as created_at,
-    last_modified_date as updated_at
+    CAST(created_date AS TIMESTAMP_NTZ) as created_at,
+    CAST(last_modified_date AS TIMESTAMP_NTZ) as updated_at
   FROM staging_industry
   WHERE 1=1
     -- Basic validation

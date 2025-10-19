@@ -9,15 +9,15 @@
 }}
 
 WITH staging_instrument_snapshot AS (
-  SELECT * FROM {{ ref('amos_source_example', 'int_snapshots_investment_nav') }}
+  SELECT * FROM {{ ref('int_snapshots_investment_nav') }}
 ),
 
 validated_instrument_snapshot AS (
   SELECT
-    id,
-    instrument_id,
-    as_of_date,
-    currency_code,
+    snapshot_id as id,
+    null as instrument_id,
+    snapshot_date as as_of_date,
+    cost_currency as currency_code,
     fx_rate,
     
     -- Common valuation fields

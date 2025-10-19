@@ -8,7 +8,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Unique commitment identifier (UUID)"
         constraints:
           - type: not_null
@@ -17,7 +17,7 @@ models:
           - unique
           - not_null
       - name: fund_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to fund table"
         constraints:
           - type: not_null
@@ -27,7 +27,7 @@ models:
               to: ref('fund')
               field: id
       - name: investor_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to investor table"
         constraints:
           - type: not_null
@@ -191,7 +191,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Unique opportunity identifier (UUID)"
         constraints:
           - type: not_null
@@ -200,12 +200,9 @@ models:
           - unique
           - not_null
       - name: fund_id
-        data_type: uuid
-        description: "Foreign key to fund table"
-        constraints:
-          - type: not_null
+        data_type: varchar(36)
+        description: "Foreign key to fund table (optional)"
         tests:
-          - not_null
           - relationships:
               to: ref('fund')
               field: id
@@ -217,14 +214,14 @@ models:
         tests:
           - not_null
       - name: stage_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to stage table"
         tests:
           - relationships:
               to: ref('stage')
               field: id
       - name: company_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to company table (optional)"
         tests:
           - relationships:

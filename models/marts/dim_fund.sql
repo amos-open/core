@@ -1,6 +1,6 @@
 select
-  f.fund_id,
-  f.fund_name,
-  f.fund_code,
+  f.id as fund_id,
+  f.name as fund_name,
+  f.admin_fund_code as fund_code,
   f.base_currency_code
-from {{ ref('amos_source_example', 'int_entities_fund') }} f
+from {{ ref('int_entities_fund') }} f

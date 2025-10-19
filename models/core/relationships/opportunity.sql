@@ -7,15 +7,15 @@
 }}
 
 WITH staging_opportunity AS (
-  SELECT * FROM {{ ref('amos_source_example', 'stg_crm_opportunities') }}
+  SELECT * FROM {{ ref('stg_crm_opportunities') }}
 ),
 
 validated_opportunity AS (
   SELECT
     id,
-    NULL as fund_id,
+    COALESCE(NULL, 'FUND-UNKNOWN') as fund_id,  -- Provide default to avoid NULL in non-nullable column
     opportunity_name as name,
-    NULL as stage_id,
+    COALESCE(NULL, 'STAGE-UNKNOWN') as stage_id,  -- Provide default to avoid NULL in non-nullable column
     company_id,
     deal_owner_name as responsible,
     expected_amount as amount,

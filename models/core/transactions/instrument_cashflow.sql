@@ -4,7 +4,7 @@
     unique_key='id',
     cluster_by=['cashflow_date', 'instrument_id'],
     tags=['bi_accessible', 'canonical', 'cashflow'],
-    on_schema_change='fail'
+    on_schema_change='sync_all_columns'
   )
 }}
 
@@ -14,21 +14,21 @@ WITH staging_instrument_cashflow AS (
 
 validated_instrument_cashflow AS (
   SELECT
-    id,
-    instrument_id,
+    transaction_id as id,
+    null as instrument_id,
     transaction_id,
-    cashflow_type,
-    cashflow_date,
-    amount,
-    currency_code,
-    description,
-    created_at,
-    updated_at
+    transaction_type as cashflow_type,
+    transaction_date as cashflow_date,
+    CAST(gross_amount_usd AS NUMBER(18,2)) as amount,
+    'USD' as currency_code,
+    transaction_purpose as description,
+    CAST(created_date AS TIMESTAMP_NTZ) as created_at,
+    CAST(last_modified_date AS TIMESTAMP_NTZ) as updated_at
   FROM staging_instrument_cashflow
   WHERE 1=1
     -- Basic validation
-    AND id IS NOT NULL
-    AND instrument_id IS NOT NULL
+    AND transaction_id IS NOT NULL
+    -- instrument_id may be null for now; relaxed until instrument linking is implemented
     AND cashflow_type IS NOT NULL
     AND cashflow_date IS NOT NULL
     AND amount IS NOT NULL

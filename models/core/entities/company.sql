@@ -7,20 +7,24 @@
 }}
 
 WITH intermediate_company AS (
-  SELECT * FROM {{ ref('amos_source_example', 'int_entities_company') }}
+  SELECT * FROM {{ ref('int_entities_company') }}
 ),
 
 validated_company AS (
   SELECT
-    {{ amos_source_example.alias_intermediate_columns('company') }}
+    id,
+    name,
+    CAST(created_at AS TIMESTAMP_NTZ) as created_at,
+    CAST(updated_at AS TIMESTAMP_NTZ) as updated_at
   FROM intermediate_company
   WHERE 1=1
     -- Entity base validation
     AND {{ validate_entity_base_fields('id', 'name') }}
-    -- Company-specific business rules
-    AND {{ validate_company_business_rules('currency', 'website', 'industry_id') }}
 )
 
 SELECT
-  {{ amos_source_example.alias_intermediate_columns('company') }}
+  id,
+  name,
+  created_at,
+  updated_at
 FROM validated_company

@@ -14,8 +14,8 @@ validated_investor_type AS (
     id,  -- Generated in staging from investor_code
     INVESTOR_NAME as name,
     STANDARDIZED_INVESTOR_TYPE as kyc_category,
-    CREATED_DATE as created_at,
-    LAST_MODIFIED_DATE as updated_at
+    CAST(CREATED_DATE AS TIMESTAMP_NTZ) as created_at,
+    CAST(LAST_MODIFIED_DATE AS TIMESTAMP_NTZ) as updated_at
   FROM staging_investor_type
   WHERE 1=1
     -- Basic validation

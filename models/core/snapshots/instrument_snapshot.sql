@@ -18,7 +18,7 @@ validated_instrument_snapshot AS (
     null as instrument_id,
     snapshot_date as as_of_date,
     cost_currency as currency_code,
-    fx_rate,
+    cost_fx_rate as fx_rate,
     
     -- Common valuation fields
     fair_value,

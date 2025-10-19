@@ -14,8 +14,8 @@ validated_company AS (
   SELECT
     id,
     name,
-    CAST(created_at AS TIMESTAMP_NTZ) as created_at,
-    CAST(updated_at AS TIMESTAMP_NTZ) as updated_at
+    created_at,
+    updated_at
   FROM intermediate_company
   WHERE 1=1
     -- Entity base validation

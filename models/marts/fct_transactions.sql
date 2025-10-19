@@ -1,10 +1,10 @@
 with t as (
-  select * from {{ ref('amos_source_example', 'int_transactions_investments') }}
+  select * from {{ ref('int_transactions_investments') }}
 ),
-f as (select fund_id, fund_code from {{ ref('amos_source_example', 'int_entities_fund') }}),
-i as (select investor_id, investor_code from {{ ref('amos_source_example', 'int_entities_investor') }})
+f as (select id as fund_id, admin_fund_code as fund_code from {{ ref('int_entities_fund') }}),
+i as (select id as investor_id, investor_code from {{ ref('int_entities_investor') }})
 select
-  cast(hash(t.source_system, t.transaction_type, t.natural_key) as varchar) as transaction_id,
+  cast(hash(t.source_system, t.transaction_type, t.transaction_id) as varchar) as transaction_id,
   f.fund_id,
   i.investor_id,
   t.date,

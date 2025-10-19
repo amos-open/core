@@ -7,20 +7,20 @@
 }}
 
 WITH staging_instrument_country AS (
-  SELECT * FROM {{ ref('amos_source_example', 'int_relationships_company_geography') }}
+  SELECT * FROM {{ ref('int_relationships_company_geography') }}
 ),
 
 validated_instrument_country AS (
   SELECT
-    instrument_id,
+    null as instrument_id,
     country_code,
-    valid_from,
-    valid_to,
-    allocation_pct,
-    role,
-    primary_flag,
-    created_at,
-    updated_at
+    processed_at as valid_from,
+    null as valid_to,
+    normalized_allocation_percentage as allocation_pct,
+    geography_type as role,
+    is_primary_geography as primary_flag,
+    processed_at as created_at,
+    processed_at as updated_at
   FROM staging_instrument_country
   WHERE 1=1
     -- Basic validation

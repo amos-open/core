@@ -22,8 +22,8 @@ validated_fund AS (
     null as target_commitment,
     null as incorporated_in,
     base_currency_code,
-    CAST(created_at AS TIMESTAMP_NTZ) as created_at,
-    CAST(updated_at AS TIMESTAMP_NTZ) as updated_at
+    CURRENT_TIMESTAMP() as created_at,
+    CURRENT_TIMESTAMP() as updated_at
   FROM staging_fund
   WHERE 1=1
     -- Entity base validation

@@ -7,17 +7,17 @@
 }}
 
 WITH staging_company_country AS (
-  SELECT * FROM {{ ref('amos_source_example', 'int_relationships_company_geography') }}
+  SELECT * FROM {{ ref('int_relationships_company_geography') }}
 ),
 
 validated_company_country AS (
   SELECT
-    company_id,
+    canonical_company_id as company_id,
     country_code,
-    primary_flag,
-    allocation_pct,
-    created_at,
-    updated_at
+    is_primary_geography as primary_flag,
+    normalized_allocation_percentage as allocation_pct,
+    processed_at as created_at,
+    processed_at as updated_at
   FROM staging_company_country
   WHERE 1=1
     -- Basic validation

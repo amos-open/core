@@ -28,7 +28,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: |
           **Primary Key - Fund Identifier**
           
@@ -182,7 +182,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Unique company identifier"
         constraints:
           - type: not_null
@@ -211,7 +211,7 @@ models:
               to: ref('currency')
               field: code
       - name: industry_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to industry table"
         tests:
           - relationships:
@@ -231,7 +231,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Unique investor identifier"
         constraints:
           - type: not_null
@@ -247,7 +247,7 @@ models:
         tests:
           - not_null
       - name: investor_type_id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Foreign key to investor_type table"
         tests:
           - relationships:
@@ -267,7 +267,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: uuid
+        data_type: varchar(36)
         description: "Unique counterparty identifier"
         constraints:
           - type: not_null

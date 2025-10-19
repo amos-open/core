@@ -19,7 +19,8 @@ validated_company AS (
   FROM intermediate_company
   WHERE 1=1
     -- Entity base validation
-    AND {{ validate_entity_base_fields('id', 'name') }}
+    AND id IS NOT NULL
+    AND name IS NOT NULL
 )
 
 SELECT

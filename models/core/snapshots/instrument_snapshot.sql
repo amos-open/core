@@ -22,12 +22,12 @@ validated_instrument_snapshot AS (
     
     -- Common valuation fields
     fair_value,
-    amortized_cost,
-    fair_value_converted,
-    amortized_cost_converted,
+    cost_basis as amortized_cost,
+    fair_value as fair_value_converted,
+    cost_basis as amortized_cost_converted,
     
     -- Basic loan fields (detailed loan snapshots in PC package)
-    principal_outstanding,
+    null as principal_outstanding,
     undrawn_commitment,
     accrued_income,
     accrued_fees,

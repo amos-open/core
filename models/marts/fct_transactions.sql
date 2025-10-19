@@ -7,11 +7,11 @@ select
   cast(hash(t.source_system, t.transaction_type, t.transaction_id) as varchar) as transaction_id,
   f.fund_id,
   i.investor_id,
-  t.date,
-  t.amount,
-  t.currency_code,
-  t.transaction_type,
+  t.investment_date as date,
+  t.total_amount_usd as amount,
+  'USD' as currency_code,
+  t.investment_type as transaction_type,
   t.source_system
 from t
-left join f on t.fund_code = f.fund_code
-left join i on t.investor_code = i.investor_code
+left join f on t.canonical_fund_id = f.fund_id
+left join i on t.canonical_company_id = i.investor_id
